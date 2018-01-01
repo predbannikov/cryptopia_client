@@ -129,6 +129,12 @@
         <item>
          <widget class="QTextEdit" name="statste"/>
         </item>
+        <item>
+         <widget class="QLineEdit" name="leApiSecret"/>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="leApiKey"/>
+        </item>
        </layout>
       </item>
      </layout>
