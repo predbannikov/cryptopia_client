@@ -5,6 +5,8 @@
 #include <QNetworkAccessManager>
 #include <QJsonValue>
 #include <QFile>
+#include <QDataStream>
+
 
 namespace Ui {
 class MainWindow;
@@ -26,6 +28,7 @@ private:
     QFile   configFile;
 
     QString printJsonValueType(QJsonValue type);
+    bool loadConfig();
 
 private slots:
     // Обработчик данных полученных от объекта QNetworkAccessManager

@@ -19,7 +19,12 @@ MainWindow::MainWindow(QWidget *parent) :
     networkManager = new QNetworkAccessManager();
     // Подключаем networkManager к обработчику ответа
     connect(networkManager, &QNetworkAccessManager::finished, this, &MainWindow::onResult);
-    this->on_saveConfig_clicked();
+    if(loadConfig())
+    {
+        qDebug() << "configuration data is loaded";
+    } else {
+        qDebug() << "config data not load";
+    }
 
 
 }
@@ -44,6 +49,8 @@ QString MainWindow::printJsonValueType(QJsonValue type)
     }
 
 }
+
+
 
 void MainWindow::onResult(QNetworkReply *reply)
 {
@@ -143,18 +150,45 @@ void MainWindow::on_postRequest_clicked()
 
 }
 
+bool MainWindow::loadConfig()
+{
+    if(QFile::exists(NAME_FILE_CONFIG))
+    {
+        configFile.setFileName(NAME_FILE_CONFIG);
+        QDataStream stream(&configFile);
+        configFile.open(QIODevice::ReadOnly);
+
+        QString str;
+        stream >> str;
+        ui->leApiKey->setText(str);
+        stream >> str;
+        ui->leApiSecret->setText(str);
+        configFile.close();
+        return true;
+    } else {
+        qDebug() << "conf file not found";
+        return false;
+    }
+}
+
 void MainWindow::on_saveConfig_clicked()
 {
-    if(!QFile::exists(NAME_FILE_CONFIG)){
-        configFile.setFileName(NAME_FILE_CONFIG);
-        configFile.open(QIODevice::ReadWrite);
-        if (configFile.isOpen()){
-            qDebug() << "file is open";
-        } else {
-            qDebug() << "file not open";
-        }
-    } else {
-        qDebug() << "file exists";
+    if(QFile::exists(NAME_FILE_CONFIG)){
+        if(QFile::remove(NAME_FILE_CONFIG))
+            qDebug() << "File remove success";
+        else
+            qDebug() << "file not remove";
     }
+    configFile.setFileName(NAME_FILE_CONFIG);
+    configFile.open(QIODevice::ReadWrite);
+    QDataStream csFile(&configFile);
+    if (configFile.isOpen()){
+        csFile << ui->leApiKey->text();
+        csFile << ui->leApiSecret->text();
+        qDebug() << "configuration save success";
+    } else {
+        qDebug() << "file not open";
+    }
+
     configFile.close();
 }

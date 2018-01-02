@@ -137,7 +137,27 @@
          <widget class="QTextEdit" name="statste"/>
         </item>
         <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>ApiKey</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QLineEdit" name="leApiSecret"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>ApiSecret</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLineEdit" name="leApiKey"/>
@@ -154,7 +174,7 @@
      <x>0</x>
      <y>0</y>
      <width>827</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
