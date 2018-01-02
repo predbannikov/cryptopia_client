@@ -108,21 +108,6 @@ void MainWindow::onResult(QNetworkReply *reply)
             ui->lbSuccess->setText(ui->lbSuccess->text()+"\nnull");
 
 
-//            QJsonValue jv = root.value("Data");
-//            // Если значение является массивом, ...
-//            if(jv.isArray()){
-//                // ... то забираем массив из данного свойства
-//                QJsonArray ja = jv.toArray();
-//                // Перебирая все элементы массива ...
-//                for(int i = 0; i < ja.count(); i++){
-//                    QJsonObject subtree = ja.at(i).toObject();
-//                    // Забираем значения свойств имени и фамилии добавляя их в textEdit
-//                    ui->teData->append(subtree.value("firstName").toString() +
-//                                         " " +
-//                                         subtree.value("lastName").toString());
-//                }
-//            }
-//            ui->statste->append(strstat.join(" "));
 
         } else {
 
@@ -155,9 +140,6 @@ void MainWindow::on_exitButton_clicked()
 void MainWindow::on_postRequest_clicked()
 {
     QNetworkRequest request(QUrl("https://www.cryptopia.co.nz/api/GetCurrencies"));
-
-
-
 
 }
 
