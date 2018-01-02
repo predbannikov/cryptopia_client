@@ -139,7 +139,7 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>ApiKey</string>
+           <string>Api Key</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -152,7 +152,7 @@
         <item>
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>ApiSecret</string>
+           <string>Api Secret</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -174,7 +174,7 @@
      <x>0</x>
      <y>0</y>
      <width>827</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
   </widget>

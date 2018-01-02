@@ -146,7 +146,9 @@ void MainWindow::on_exitButton_clicked()
 
 void MainWindow::on_postRequest_clicked()
 {
-    QNetworkRequest request(QUrl("https://www.cryptopia.co.nz/api/GetCurrencies"));
+    QNetworkRequest request(QUrl("https://www.cryptopia.co.nz/Api/GetBalance"));
+
+
 
 }
 
