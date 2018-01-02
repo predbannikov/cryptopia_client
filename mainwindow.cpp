@@ -8,6 +8,8 @@
 #include <QNetworkReply>
 #include <QUrl>
 
+
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -17,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     networkManager = new QNetworkAccessManager();
     // Подключаем networkManager к обработчику ответа
     connect(networkManager, &QNetworkAccessManager::finished, this, &MainWindow::onResult);
+    this->on_saveConfig_clicked();
 
 
 }
@@ -158,12 +161,18 @@ void MainWindow::on_postRequest_clicked()
 
 }
 
-
-
-
-
-
-
-
-
-
+void MainWindow::on_saveConfig_clicked()
+{
+    if(!QFile::exists(NAME_FILE_CONFIG)){
+        configFile.setFileName(NAME_FILE_CONFIG);
+        configFile.open(QIODevice::ReadWrite);
+        if (configFile.isOpen()){
+            qDebug() << "file is open";
+        } else {
+            qDebug() << "file not open";
+        }
+    } else {
+        qDebug() << "file exists";
+    }
+    configFile.close();
+}

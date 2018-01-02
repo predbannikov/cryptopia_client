@@ -93,6 +93,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="saveConfig">
+          <property name="text">
+           <string>Сохранить</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="exitButton">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
