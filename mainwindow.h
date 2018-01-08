@@ -6,6 +6,8 @@
 #include <QJsonValue>
 #include <QFile>
 #include <QDataStream>
+#include <QCryptographicHash>
+#include <QMessageAuthenticationCode>
 
 
 namespace Ui {

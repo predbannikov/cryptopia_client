@@ -146,8 +146,38 @@ void MainWindow::on_exitButton_clicked()
 
 void MainWindow::on_postRequest_clicked()
 {
-    QNetworkRequest request(QUrl("https://www.cryptopia.co.nz/Api/GetBalance"));
+//    QNetworkRequest req;
+//    req.setUrl(QUrl("https://www.cryptopia.co.nz/Api/GetBalance"));
+//    req.setHeader(QNetworkRequest::ContentTypeHeader, QString("application/json"));
+    const QByteArray req = "{}";
+    QJsonObject json;
 
+    QByteArray API_SECRET;
+    API_SECRET.append(ui->leApiSecret->text());
+    QString API_KEY = ui->leApiKey->text();
+//    answer = nemo.post(req, json.toUtf8());
+    QByteArray requestContentBase64String;
+    requestContentBase64String = QCryptographicHash::hash(req, QCryptographicHash::Md5);
+    QByteArray base64 = requestContentBase64String.toBase64();
+    qint64 unixtimestamp = QDateTime::currentSecsSinceEpoch();
+
+//    QJsonParseError parsError;
+//    QJsonDocument document = QJsonDocument::fromJson(reply->readAll(), &parsError);
+//    QByteArray post = QJsonDocument::toJson(req);
+//    QJsonObject root = document.object();
+    QString nonce = QString::number(unixtimestamp);
+    QString signature = API_KEY + "POST" + "https://www.cryptopia.co.nz/Api/GetBalance" + nonce + QString(base64);
+    QMessageAuthenticationCode code(QCryptographicHash::Sha256);
+    QByteArray api_secret = QCryptographicHash::hash(API_SECRET, QCryptographicHash::Md5);
+    code.setKey(api_secret);
+    code.addData(signature.toStdString().c_str());
+    QByteArray hmacsignature = QCryptographicHash::hash(code.result(), QCryptographicHash::Md5);
+    QString header_value = "amx " + API_KEY + ":" + hmacsignature + ":" + nonce;
+    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+    QString urlreq = "https://www.cryptopia.co.nz/api/GetCurrencies/";
+    manager->post(QNetworkRequest(urlreq), header_value.toUtf8());
+
+    qDebug() << nonce;
 
 
 }
