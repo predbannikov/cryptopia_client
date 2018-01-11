@@ -8,6 +8,8 @@
 #include <QDataStream>
 #include <QCryptographicHash>
 #include <QMessageAuthenticationCode>
+#include <QThread>
+#include "network.h"
 
 
 namespace Ui {
@@ -27,6 +29,7 @@ public:
 private:
     Ui::MainWindow *ui;
     QNetworkAccessManager *networkManager;
+    QNetworkAccessManager *manager;
     QFile   configFile;
 
     QString printJsonValueType(QJsonValue type);
@@ -35,13 +38,14 @@ private:
 private slots:
     // Обработчик данных полученных от объекта QNetworkAccessManager
     void onResult(QNetworkReply *reply);
-
+    void onResponse( QNetworkReply* reply);
 
     void on_getRequest_clicked();
     void on_clearte_clicked();
     void on_exitButton_clicked();
     void on_postRequest_clicked();
     void on_saveConfig_clicked();
+    void update(int i);
 };
 
 #endif // MAINWINDOW_H

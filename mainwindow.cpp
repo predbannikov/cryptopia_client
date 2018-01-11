@@ -17,14 +17,27 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     networkManager = new QNetworkAccessManager();
+    manager = new QNetworkAccessManager(this);
+
     // Подключаем networkManager к обработчику ответа
     connect(networkManager, &QNetworkAccessManager::finished, this, &MainWindow::onResult);
+    connect( manager, &QNetworkAccessManager::finished, this, &MainWindow::onResponse);
     if(loadConfig())
     {
         qDebug() << "configuration data is loaded";
     } else {
         qDebug() << "config data not load";
     }
+    QThread *netthr = new QThread;
+    Network *network = new Network("network");
+
+    network->moveToThread(netthr);
+
+    connect(network, SIGNAL(send(int)), this, SLOT(update(int)));
+    connect(netthr, SIGNAL(started()), network, SLOT(doWork()));
+    connect(netthr, &QThread::finished, network, &QObject::deleteLater);
+
+    netthr->start();
 
 
 }
@@ -118,13 +131,42 @@ void MainWindow::onResult(QNetworkReply *reply)
 
         } else {
 
-            qDebug() << parsError.errorString();
+             qDebug() << parsError.errorString();
 
         }
 
 
 
     }
+    reply->deleteLater();
+}
+
+void MainWindow::onResponse(QNetworkReply *reply)
+{
+    ui->teData->append(reply->readAll());
+    qDebug() << "Got on";
+    if ((!reply->error())){
+        qDebug() << "Got in if";
+        QJsonParseError parsError;
+        QJsonDocument document = QJsonDocument::fromJson(reply->readAll(), &parsError);
+        QByteArray data;
+        data = reply->readAll();
+        qDebug() << QString(data);
+
+        if (!document.isNull()){
+            qDebug() << "Got in isNull";
+            ui->teData->append(reply->readAll());
+            // Забираем из документа корневой объект
+            QJsonObject root = document.object();
+        } else {
+            qDebug() << parsError.errorString();
+        }
+
+    } else {
+        qDebug() << "parsError.errorString()";
+        qDebug() << reply->errorString();
+    }
+
     reply->deleteLater();
 }
 
@@ -146,40 +188,53 @@ void MainWindow::on_exitButton_clicked()
 
 void MainWindow::on_postRequest_clicked()
 {
-//    QNetworkRequest req;
-//    req.setUrl(QUrl("https://www.cryptopia.co.nz/Api/GetBalance"));
-//    req.setHeader(QNetworkRequest::ContentTypeHeader, QString("application/json"));
-    const QByteArray req = "{}";
-    QJsonObject json;
+    const QByteArray reqjsonrec = "{}";
+    QJsonParseError parseError;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(reqjsonrec, &parseError);
+
 
     QByteArray API_SECRET;
     API_SECRET.append(ui->leApiSecret->text());
+
     QString API_KEY = ui->leApiKey->text();
-//    answer = nemo.post(req, json.toUtf8());
+
     QByteArray requestContentBase64String;
-    requestContentBase64String = QCryptographicHash::hash(req, QCryptographicHash::Md5);
+    QByteArray arrayreq = jsonDoc.toJson(QJsonDocument::Compact);
+    requestContentBase64String = QCryptographicHash::hash(arrayreq, QCryptographicHash::Md5);
     QByteArray base64 = requestContentBase64String.toBase64();
     qint64 unixtimestamp = QDateTime::currentSecsSinceEpoch();
 
-//    QJsonParseError parsError;
-//    QJsonDocument document = QJsonDocument::fromJson(reply->readAll(), &parsError);
-//    QByteArray post = QJsonDocument::toJson(req);
-//    QJsonObject root = document.object();
     QString nonce = QString::number(unixtimestamp);
-    QString signature = API_KEY + "POST" + "https://www.cryptopia.co.nz/Api/GetBalance" + nonce + QString(base64);
+//    QString signature = API_KEY + "POST" + QString("https:%2f%2fwww.cryptopia.co.nz%2fApi%2fGetBalance%2f").toLower().toStdString().c_str() + nonce + QString(base64);
+    QString signature = API_KEY + "POST" + QString(QUrl::toPercentEncoding(
+                "https://www.cryptopia.co.nz/Api/GetBalance","", "/:")).toLower()
+            + nonce + QString(base64);
+//    signature = "d1c55e1cc3234dbebd279e0224c9a959POSThttps%3a%2f%2fwww.cryptopia.co.nz%2fapi%2fgetbalance1515684198mZFLkyvTelC5g8XnyQrpOw==";
+//    nonce = "1515684198";
+    //    QByteArray api_secret = QCryptographicHash::hash(API_SECRET, QCryptographicHash::Md5);
+    QByteArray api_secret = QByteArray::fromBase64(API_SECRET);
     QMessageAuthenticationCode code(QCryptographicHash::Sha256);
-    QByteArray api_secret = QCryptographicHash::hash(API_SECRET, QCryptographicHash::Md5);
     code.setKey(api_secret);
-    code.addData(signature.toStdString().c_str());
-    QByteArray hmacsignature = QCryptographicHash::hash(code.result(), QCryptographicHash::Md5);
+//    code.addData(signature.toStdString().c_str());
+    QByteArray sigtobyte = signature.toUtf8();
+    code.addData(sigtobyte);
+    QByteArray decodapisecret = code.result();
+
+
+//    QByteArray hmacsignature = QCryptographicHash::hash(decodapisecret, QCryptographicHash::Md5);
+    QByteArray hmacsignature = decodapisecret.toBase64();
+
     QString header_value = "amx " + API_KEY + ":" + hmacsignature + ":" + nonce;
-    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
-    QString urlreq = "https://www.cryptopia.co.nz/api/GetCurrencies/";
-    manager->post(QNetworkRequest(urlreq), header_value.toUtf8());
+    qDebug() << header_value;
 
+    QNetworkRequest reqest(QUrl(QString("https://www.cryptopia.co.nz/Api/GetBalance").toLower()));
+//    reqest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json;charset=UTF-8");
+    reqest.setRawHeader(QByteArray("Content-Type"), "application/json; charset=utf-8");
+    reqest.setRawHeader(QByteArray("Authorization"), header_value.toUtf8());
+
+    manager->post(reqest,arrayreq );
+    qDebug() << header_value;
     qDebug() << nonce;
-
-
 }
 
 bool MainWindow::loadConfig()
@@ -223,4 +278,9 @@ void MainWindow::on_saveConfig_clicked()
     }
 
     configFile.close();
+}
+
+void MainWindow::update(int i)
+{
+    qDebug() << QString::number(i);
 }
