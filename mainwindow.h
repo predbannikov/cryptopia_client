@@ -2,15 +2,16 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QNetworkAccessManager>
+
 #include <QJsonValue>
 #include <QFile>
 #include <QDataStream>
-#include <QCryptographicHash>
-#include <QMessageAuthenticationCode>
-#include <QThread>
+#include <QByteArray>
+#include "mythread.h"
 #include "network.h"
 
+
+//Q_DECLARE_METATYPE(QAbstractSocket::QByteArray)
 
 namespace Ui {
 class MainWindow;
@@ -25,16 +26,15 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-
+    QThread *netthr;
 private:
     Ui::MainWindow *ui;
-    QNetworkAccessManager *networkManager;
-    QNetworkAccessManager *manager;
+
     QFile   configFile;
 
     QString printJsonValueType(QJsonValue type);
     bool loadConfig();
-
+    Network *network;
 private slots:
     // Обработчик данных полученных от объекта QNetworkAccessManager
     void onResult(QNetworkReply *reply);
@@ -45,7 +45,13 @@ private slots:
     void on_exitButton_clicked();
     void on_postRequest_clicked();
     void on_saveConfig_clicked();
-    void update(int i);
+
+    void update (int i);
+
+signals:
+    void sendKey(QByteArray);
+    void sendJson(QJsonDocument);
+
 };
 
 #endif // MAINWINDOW_H

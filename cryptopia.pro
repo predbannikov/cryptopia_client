@@ -28,6 +28,7 @@ SOURCES += main.cpp\
     network.cpp
 
 HEADERS  += mainwindow.h \
-    network.h
+    network.h \
+    mythread.h
 
 FORMS    += mainwindow.ui
