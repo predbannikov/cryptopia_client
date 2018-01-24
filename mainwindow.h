@@ -17,6 +17,10 @@ namespace Ui {
 class MainWindow;
 }
 
+
+struct RequestData {
+    QString url;
+};
 static const char* NAME_FILE_CONFIG = "config";
 
 class MainWindow : public QMainWindow
@@ -48,9 +52,11 @@ private slots:
 
     void update (int i);
 
+    void response(QJsonObject json);
+
 signals:
     void sendKey(QByteArray);
-    void sendJson(QJsonDocument);
+    void sendJson(QJsonObject);
 
 };
 

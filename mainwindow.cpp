@@ -23,6 +23,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(netthr, &QThread::finished, network, &Network::deleteLater, Qt::QueuedConnection);
     QObject::connect(this, &MainWindow::sendKey, network, &Network::receivKey, Qt::QueuedConnection);
     QObject::connect(this, &MainWindow::sendJson, network, &Network::receivJson, Qt::QueuedConnection);
+    QObject::connect(network, &Network::sendMessage, this, &MainWindow::response, Qt::QueuedConnection);
+
 //    QObject::connect(netthr, &QThread::started, network, &Network::doWork, Qt::QueuedConnection);
 //    connect(network, SIGNAL(send(int)), this, SLOT(update(int)));
 //    connect(this, &MainWindow::sendKey, network, &Network::receivKey, Qt::ConnectionType::DirectConnection );
@@ -74,47 +76,7 @@ void MainWindow::onResult(QNetworkReply *reply)
             ui->teData->append(reply->readAll());
             // Забираем из документа корневой объект
             QJsonObject root = document.object();
-            QStringList strstat;
-//            strstat.append(QString::number(root.size(), 10));
-            strstat.append(root.keys());
-            QString tmp;
-            for(int i=0; i<root.size(); i++)
-            {
-                tmp = strstat.at(i);
-                if(tmp==QString("Success"))
-                {
-                    if(1)
-                    {
-                        ui->lbStat->setText("Успешно");
-                        ui->lbStat->setStyleSheet("background-color: #5EED00; font-size: 15px; font-weight: bold; color: #000000");
-                        ui->lbStat->setAlignment(Qt::AlignCenter);
-                    } else {
 
-                    }
-                }
-                if(tmp==QString("Message"))
-                {
-                    if(printJsonValueType(root.value(tmp))=="null")
-                    {
-                        ui->lbInsidMsg->setText("Сообщений нет");
-                        ui->lbInsidMsg->setStyleSheet("background-color: #828282; font-size: 15px; font-weight: bold; color: #000000");
-                        ui->lbInsidMsg->setAlignment(Qt::AlignCenter);
-                    } else {
-                    }
-                }
-                tmp.append(printJsonValueType(root.value(tmp)));
-                ui->teData->append(tmp);
-//                ui->teData->append("\n");
-            }
-            strstat << "\n";
-            // Второе значение пропишем строкой
-            QJsonValue jfirst = root.value("Success");
-            if (jfirst.isBool())
-                ui->lbSuccess->setText("true");
-            else
-                ui->lbSuccess->setText("false");
-            QJsonValue jsecond = root.value("Message");
-            ui->lbSuccess->setText(ui->lbSuccess->text()+"\nnull");
         } else {
              qDebug() << parsError.errorString();
         }
@@ -155,6 +117,11 @@ void MainWindow::on_getRequest_clicked()
 {
     // Получаем данные, а именно JSON файл с сайта по определённому url
 //    networkManager->get(QNetworkRequest(QUrl("https://www.cryptopia.co.nz/api/GetCurrencies")));
+
+    QJsonDocument json;
+    QJsonObject obj;
+    obj["GET"]=QString("Currencies");
+    sendJson(obj);
 
 }
 
@@ -281,4 +248,49 @@ void MainWindow::update(int i)
     int id = (int) QThread::currentThread();
     qDebug() << "update()" << QString::number(id);
     qDebug() << QString::number(i);
+}
+
+void MainWindow::response(QJsonObject json)
+{
+    QStringList strstat;
+//            strstat.append(QString::number(root.size(), 10));
+    strstat.append(json.keys());
+    QString tmp;
+    for(int i=0; i<json.size(); i++)
+    {
+        tmp = strstat.at(i);
+        if(tmp==QString("Success"))
+        {
+            if(1)
+            {
+                ui->lbStat->setText("Успешно");
+                ui->lbStat->setStyleSheet("background-color: #5EED00; font-size: 15px; font-weight: bold; color: #000000");
+                ui->lbStat->setAlignment(Qt::AlignCenter);
+            } else {
+
+            }
+        }
+        if(tmp==QString("Message"))
+        {
+            if(printJsonValueType(json.value(tmp))=="null")
+            {
+                ui->lbInsidMsg->setText("Сообщений нет");
+                ui->lbInsidMsg->setStyleSheet("background-color: #828282; font-size: 15px; font-weight: bold; color: #000000");
+                ui->lbInsidMsg->setAlignment(Qt::AlignCenter);
+            } else {
+            }
+        }
+        tmp.append(printJsonValueType(json.value(tmp)));
+        ui->teData->append(tmp);
+//                ui->teData->append("\n");
+    }
+    strstat << "\n";
+    // Второе значение пропишем строкой
+    QJsonValue jfirst = json.value("Success");
+    if (jfirst.isBool())
+        ui->lbSuccess->setText("true");
+    else
+        ui->lbSuccess->setText("false");
+    QJsonValue jsecond = json.value("Message");
+    ui->lbSuccess->setText(ui->lbSuccess->text()+"\nnull");
 }

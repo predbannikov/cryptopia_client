@@ -23,10 +23,28 @@ void Network::doWork()
     //    loop.exec();
 }
 
-void Network::receivJson(QJsonDocument json)
+void Network::receivJson(QJsonObject json)
 {
-    QJsonObject jsonObj = json.object();
-    for(jsonObj.keys())
+
+//    for(jsonObj.keys())
+    QStringList listObj = json.keys();
+    for(int i=0;i<listObj.size();i++)
+    {
+        if(json.contains("GET") && json["GET"].isString())
+        {
+            qDebug() << "got is: if(GET)";
+            if(json["GET"] == QString("Currencies"))
+            {
+                QString url = URL + "GetCurrencies";
+//                getNetManager->get(QNetworkRequest(QUrl(url)));
+                getNetManager->get(QNetworkRequest(QUrl("https://www.cryptopia.co.nz/api/GetCurrencies")));
+                qDebug() << "got is: Currencies";
+            }
+        } else {
+            qDebug() << "got is: else(GET)";
+        }
+
+    }
 
 }
 
@@ -99,7 +117,21 @@ void Network::receivKey(QByteArray bytearray)
 
 void Network::getResult(QNetworkReply *reply)
 {
-
+    qDebug() << "getResult";
+    QNetworkReply::NetworkError  rpl = reply->error();
+    qDebug() << QString::number(rpl);
+    if ((!reply->error())){
+        QJsonParseError parsError;
+        QJsonDocument document = QJsonDocument::fromJson(reply->readAll(), &parsError);
+        if (!document.isNull()){
+            // Забираем из документа корневой объект
+            QJsonObject root = document.object();
+            emit sendMessage(root);
+        } else {
+            qDebug() << parsError.errorString();
+        }
+    }
+    reply->deleteLater();
 }
 
 void Network::postResult(QNetworkReply *reply)

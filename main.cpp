@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[])
 {
-    QLoggingCategory::setFilterRules("qt.network.ssl.warning=false");
+//    QLoggingCategory::setFilterRules("qt.network.ssl.warning=false");
 
     QApplication a(argc, argv);
     MainWindow w;
