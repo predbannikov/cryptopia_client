@@ -25,27 +25,19 @@ void Network::doWork()
 
 void Network::receivJson(QJsonObject json)
 {
-
-//    for(jsonObj.keys())
-    QStringList listObj = json.keys();
-    for(int i=0;i<listObj.size();i++)
+    if(json.contains("GET") && json["GET"].isString())
     {
-        if(json.contains("GET") && json["GET"].isString())
+        qDebug() << "got is: if(GET)";
+        if(json["GET"] == QString("GetMarkets"))
         {
-            qDebug() << "got is: if(GET)";
-            if(json["GET"] == QString("Currencies"))
-            {
-                QString url = URL + "GetCurrencies";
-//                getNetManager->get(QNetworkRequest(QUrl(url)));
-                getNetManager->get(QNetworkRequest(QUrl("https://www.cryptopia.co.nz/api/GetCurrencies")));
-                qDebug() << "got is: Currencies";
-            }
-        } else {
-            qDebug() << "got is: else(GET)";
+            QString url = URL + "GetMarkets";
+                getNetManager->get(QNetworkRequest(QUrl(url)));
+//            getNetManager->get(QNetworkRequest(QUrl("https://www.cryptopia.co.nz/api/GetCurrencies")));
+            qDebug() << "got is: GetMarkets";
         }
-
+    } else {
+        qDebug() << "got is: else(GET)";
     }
-
 }
 
 void Network::getBalance()

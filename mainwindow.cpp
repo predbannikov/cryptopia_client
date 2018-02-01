@@ -4,9 +4,11 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QFontMetrics>
+#include <QSize>
 
 
-
+static const char* NAME_FILE_CONFIG = "config";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -38,6 +40,24 @@ MainWindow::MainWindow(QWidget *parent) :
         qDebug() << "config data not load";
     }
 
+    this->setStyleSheet("color: #929292; "
+                        "selection-color: green;"
+                        "selection-background-color: black;"
+                        "background-color: #323232");
+
+    tableModel = new TableModel(this);
+    ui->listCurrencies->setMaximumWidth(300);
+    ui->listCurrencies->setSortingEnabled(true);
+    ui->listCurrencies->setModel(tableModel);
+    selection.setModel(tableModel);
+    ui->listCurrencies->setSelectionModel(&selection);
+    ui->listCurrencies->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->listCurrencies->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->listCurrencies->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+    ui->listCurrencies->horizontalHeader()->setStyleSheet("QHeaderView::section { background-color:#323232 }");
+    ui->listCurrencies->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->listCurrencies->verticalHeader()->setDefaultSectionSize(22);
+    QObject::connect(ui->listCurrencies, SIGNAL(clicked(QModelIndex)), tableModel, SLOT(replaceCheck(QModelIndex)) );
 }
 
 MainWindow::~MainWindow()
@@ -63,55 +83,6 @@ QString MainWindow::printJsonValueType(QJsonValue type)
     }
 }
 
-void MainWindow::onResult(QNetworkReply *reply)
-{
-    // Если ошибки отсутсвуют
-//    ui->teData->append(reply->readAll());
-    if ((!reply->error())){  //&& reply->bytesAvailable()
-
-        // То создаём объект Json Document, считав в него все данные из ответа
-        QJsonParseError parsError;
-        QJsonDocument document = QJsonDocument::fromJson(reply->readAll(), &parsError);
-        if (!document.isNull()){
-            ui->teData->append(reply->readAll());
-            // Забираем из документа корневой объект
-            QJsonObject root = document.object();
-
-        } else {
-             qDebug() << parsError.errorString();
-        }
-    }
-    reply->deleteLater();
-}
-
-void MainWindow::onResponse(QNetworkReply *reply)
-{
-//    ui->teData->append(reply->readAll());
-//    qDebug() << "Got on";
-//    if ((!reply->error())){
-//        qDebug() << "Got in if";
-//        QJsonParseError parsError;
-//        QJsonDocument document = QJsonDocument::fromJson(reply->readAll(), &parsError);
-//        QByteArray data;
-//        data = reply->readAll();
-//        qDebug() << QString(data);
-
-//        if (!document.isNull()){
-//            qDebug() << "Got in isNull";
-//            ui->teData->append(reply->readAll());
-//            // Забираем из документа корневой объект
-//            QJsonObject root = document.object();
-//        } else {
-//            qDebug() << parsError.errorString();
-//        }
-
-//    } else {
-//        qDebug() << "parsError.errorString()";
-//        qDebug() << reply->errorString();
-//    }
-
-//    reply->deleteLater();
-}
 
 void MainWindow::on_getRequest_clicked()
 {
@@ -120,7 +91,7 @@ void MainWindow::on_getRequest_clicked()
 
     QJsonDocument json;
     QJsonObject obj;
-    obj["GET"]=QString("Currencies");
+    obj["GET"]=QString("GetMarkets");
     sendJson(obj);
 
 }
@@ -144,54 +115,6 @@ void MainWindow::on_postRequest_clicked()
         emit sendKey(QByteArray());
 
 
-
-//    const QByteArray reqjsonrec = "{}";
-//    QJsonParseError parseError;
-//    QJsonDocument jsonDoc = QJsonDocument::fromJson(reqjsonrec, &parseError);
-
-
-//    QByteArray API_SECRET;
-//    API_SECRET.append(ui->leApiSecret->text());
-
-//    QString API_KEY = ui->leApiKey->text();
-
-//    QByteArray requestContentBase64String;
-//    QByteArray arrayreq = jsonDoc.toJson(QJsonDocument::Compact);
-//    requestContentBase64String = QCryptographicHash::hash(arrayreq, QCryptographicHash::Md5);
-//    QByteArray base64 = requestContentBase64String.toBase64();
-//    qint64 unixtimestamp = QDateTime::currentSecsSinceEpoch();
-
-//    QString nonce = QString::number(unixtimestamp);
-////    QString signature = API_KEY + "POST" + QString("https:%2f%2fwww.cryptopia.co.nz%2fApi%2fGetBalance%2f").toLower().toStdString().c_str() + nonce + QString(base64);
-//    QString signature = API_KEY + "POST" + QString(QUrl::toPercentEncoding(
-//                "https://www.cryptopia.co.nz/Api/GetBalance","", "/:")).toLower()
-//            + nonce + QString(base64);
-////    signature = "d1c55e1cc3234dbebd279e0224c9a959POSThttps%3a%2f%2fwww.cryptopia.co.nz%2fapi%2fgetbalance1515684198mZFLkyvTelC5g8XnyQrpOw==";
-////    nonce = "1515684198";
-//    //    QByteArray api_secret = QCryptographicHash::hash(API_SECRET, QCryptographicHash::Md5);
-//    QByteArray api_secret = QByteArray::fromBase64(API_SECRET);
-//    QMessageAuthenticationCode code(QCryptographicHash::Sha256);
-//    code.setKey(api_secret);
-////    code.addData(signature.toStdString().c_str());
-//    QByteArray sigtobyte = signature.toUtf8();
-//    code.addData(sigtobyte);
-//    QByteArray decodapisecret = code.result();
-
-
-////    QByteArray hmacsignature = QCryptographicHash::hash(decodapisecret, QCryptographicHash::Md5);
-//    QByteArray hmacsignature = decodapisecret.toBase64();
-
-//    QString header_value = "amx " + API_KEY + ":" + hmacsignature + ":" + nonce;
-//    qDebug() << header_value;
-
-//    QNetworkRequest reqest(QUrl(QString("https://www.cryptopia.co.nz/Api/GetBalance").toLower()));
-////    reqest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json;charset=UTF-8");
-//    reqest.setRawHeader(QByteArray("Content-Type"), "application/json; charset=utf-8");
-//    reqest.setRawHeader(QByteArray("Authorization"), header_value.toUtf8());
-
-//    manager->post(reqest,arrayreq );
-//    qDebug() << header_value;
-//    qDebug() << nonce;
 }
 
 bool MainWindow::loadConfig()
@@ -243,47 +166,81 @@ void MainWindow::on_saveConfig_clicked()
     configFile.close();
 }
 
-void MainWindow::update(int i)
-{
-    int id = (int) QThread::currentThread();
-    qDebug() << "update()" << QString::number(id);
-    qDebug() << QString::number(i);
-}
-
 void MainWindow::response(QJsonObject json)
 {
     QStringList strstat;
 //            strstat.append(QString::number(root.size(), 10));
     strstat.append(json.keys());
     QString tmp;
-    for(int i=0; i<json.size(); i++)
-    {
-        tmp = strstat.at(i);
-        if(tmp==QString("Success"))
+    qDebug() << "start";
+        if(json.contains("Success") && json["Success"].isBool())
         {
-            if(1)
+            if(json["Success"].toBool())
             {
                 ui->lbStat->setText("Успешно");
                 ui->lbStat->setStyleSheet("background-color: #5EED00; font-size: 15px; font-weight: bold; color: #000000");
                 ui->lbStat->setAlignment(Qt::AlignCenter);
             } else {
-
+                qDebug() << "json response get not Success";
             }
         }
-        if(tmp==QString("Message"))
+        if(json.contains("Message") )
         {
-            if(printJsonValueType(json.value(tmp))=="null")
+            if(printJsonValueType(json.value("Message"))=="Null")
             {
                 ui->lbInsidMsg->setText("Сообщений нет");
                 ui->lbInsidMsg->setStyleSheet("background-color: #828282; font-size: 15px; font-weight: bold; color: #000000");
                 ui->lbInsidMsg->setAlignment(Qt::AlignCenter);
             } else {
+                QString str = json["Message"].toString();
+                ui->lbInsidMsg->setText(str);
+                ui->lbInsidMsg->setStyleSheet("background-color: #FF0000; font-size: 15px; font-weight: bold; color: #000000");
+                ui->lbInsidMsg->setAlignment(Qt::AlignCenter);
             }
+        }
+        if(json.contains("Data") && json["Data"].isArray())
+        {
+            QJsonArray jarray = json["Data"].toArray();
+            ui->teData->append("Колличество элементов: ");
+            ui->teData->append(QString::number(jarray.size()));
+            for(int i=0; i<jarray.size(); i++)
+            {
+//                Currency currency;
+                QJsonObject jdata = jarray[i].toObject();
+                TableModel::Currency curr;
+//                if(jdata.contains("Name") && jdata["Name"].isString())
+//                {
+//                    QString tmp = "Монета: ";
+//                    tmp.append(jdata["Name"].toString());
+//                    ui->teData->append(tmp);
+//                }
+                if(jdata.contains("Label") && jdata["Label"].isString())
+                {
+                    curr.label = jdata["Label"].toString();
+//                    ui->teData->append(jdata["Label"].toString());
+                }
+                if(jdata.contains("TradePairId") && jdata["TradePairId"].isDouble())
+                {
+                    curr.Id = jdata["TradePairId"].toInt();
+//                    tableModel->setData( currency.insert(TradePairId, QString::number(jdata["TradePairId"].toInt()));
+                }
+                if(jdata.contains("LastPrice") && jdata["LastPrice"].isDouble())
+                {
+                    curr.lastPrice = jdata["LastPrice"].toDouble();
+                    curr.filter = false;
+                }
+//                currencies.append(currency);
+//                if(jdata.contains("") && jdata[""].is)
+//                {
+
+//                }
+                tableModel->appendCurrency(curr);
+            }
+//            ui->listCurrencies->setModel();
         }
         tmp.append(printJsonValueType(json.value(tmp)));
         ui->teData->append(tmp);
 //                ui->teData->append("\n");
-    }
     strstat << "\n";
     // Второе значение пропишем строкой
     QJsonValue jfirst = json.value("Success");
@@ -294,3 +251,90 @@ void MainWindow::response(QJsonObject json)
     QJsonValue jsecond = json.value("Message");
     ui->lbSuccess->setText(ui->lbSuccess->text()+"\nnull");
 }
+
+TableModel::TableModel(QObject *parent): QAbstractTableModel(parent)
+{
+
+}
+
+QVariant TableModel::data(const QModelIndex &index, int role) const
+{
+    QVariant result;
+    if (!index.isValid())
+        return QVariant();
+
+    switch(role){
+        case Qt::CheckStateRole:
+            if (index.column()==filter)
+                return currencies.at(index.row()).filter;
+            break;
+        case Qt::DisplayRole:{
+            const TableModel::Currency &rec = currencies.at(index.row());
+            int key = index.column();
+            switch( key) {
+                case TradePairId:
+                    return rec.Id;
+                case Label:
+                    return rec.label;
+                case LastPrice:
+                    return QString::number(rec.lastPrice, 'f', 8);
+            }
+        }
+        default:
+            return QVariant();
+    }
+//     Если необходимо отобразить картинку - ловим роль Qt::DecorationRole
+    return result;
+}
+
+bool TableModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    if (index.isValid() && role == Qt::SizeHintRole){
+
+    }
+}
+
+QVariant TableModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    // Для любой роли, кроме запроса на отображение, прекращаем обработку
+    if (role != Qt::DisplayRole)
+    return QVariant();
+    // формируем заголовки по номуру столбца
+    if (orientation == Qt::Horizontal) {
+        switch (section) {
+            case TradePairId:
+            return tr("Id");
+            case Label:
+            return tr("Label");
+            case LastPrice:
+            return tr("LastPrice");
+            case filter:
+            return tr("X");
+        }
+    }
+    return QVariant();
+}
+
+Qt::ItemFlags TableModel::flags(const QModelIndex &index) const
+{
+    if(!index.isValid())
+        return Qt::NoItemFlags;
+    return /*Qt::ItemIsEditable |*/ Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+
+}
+
+void TableModel::appendCurrency(TableModel::Currency cur)
+{
+    beginInsertRows(QModelIndex(), 1, 1);
+    currencies.append(cur);
+    endInsertRows();
+}
+
+void TableModel::replaceCheck(QModelIndex index)
+{
+    if(index.column()==0){
+        currencies[index.row()].filter ^= 1;
+        emit dataChanged( index, index );
+    }
+}
+
