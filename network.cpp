@@ -27,16 +27,40 @@ void Network::receivJson(QJsonObject json)
 {
     if(json.contains("GET") && json["GET"].isString())
     {
-        qDebug() << "got is: if(GET)";
         if(json["GET"] == QString("GetMarkets"))
         {
             QString url = URL + "GetMarkets";
-                getNetManager->get(QNetworkRequest(QUrl(url)));
+            getNetManager->get(QNetworkRequest(QUrl(url)));
 //            getNetManager->get(QNetworkRequest(QUrl("https://www.cryptopia.co.nz/api/GetCurrencies")));
-            qDebug() << "got is: GetMarkets";
+        }
+        if(json["GET"] == QString("GetMarket"))
+        {
+            QString url = URL + "GetMarket/";
+            url+=QString::number(json["par"].toInt())+'/';
+            getNetManager->get(QNetworkRequest(QUrl(url)));
+        }
+        if(json["GET"] == QString("GetMarketHistory"))
+        {
+            QString url = URL + "GetMarketHistory/";
+            url+=QString::number(json["par"].toInt())+'/';
+            getNetManager->get(QNetworkRequest(QUrl(url)));
+        }
+        if(json["GET"] == QString("GetMarketOrders"))
+        {
+            QString url = URL + "GetMarketOrders/";
+            url+=QString::number(json["par"].toInt())+'/';
+            getNetManager->get(QNetworkRequest(QUrl(url)));
+        }
+        emit sendCountRequest();
+    } else if(json.contains("POST") && json["POST"].isString())
+    {
+        if(json["POST"] == QString("GetBalance"))
+        {
+            QString url = URL + "GetBalance";
+            getBalance();
         }
     } else {
-        qDebug() << "got is: else(GET)";
+        qDebug() << "got is: else(GET) in: void Network::receivJson(QJsonObject json)";
     }
 }
 
@@ -93,25 +117,23 @@ void Network::getBalance()
 
 void Network::receivKey(QByteArray bytearray)
 {
-//    API_KEY = bytearray[0];
-//    API_SECRET = bytearray[1];
+//    API_KEY.append(bytearray[0]);
+//    API_SECRET.append(bytearray[1]);
 //    qDebug() << "API_KEY: " << QString(API_KEY);
 //    qDebug() << "API_SECRET: " << QString(API_SECRET);
 
 
 
 //        Sleep(1000);
-        int id = (int)QThread::currentThreadId();
-        qDebug() << "doWork: " << QString::number(id);
+//        int id = (int)QThread::currentThreadId();
+//        qDebug() << "doWork: " << QString::number(id);
 
 
 }
 
 void Network::getResult(QNetworkReply *reply)
 {
-    qDebug() << "getResult";
     QNetworkReply::NetworkError  rpl = reply->error();
-    qDebug() << QString::number(rpl);
     if ((!reply->error())){
         QJsonParseError parsError;
         QJsonDocument document = QJsonDocument::fromJson(reply->readAll(), &parsError);
@@ -128,20 +150,14 @@ void Network::getResult(QNetworkReply *reply)
 
 void Network::postResult(QNetworkReply *reply)
 {
-    qDebug() << "Got on";
+    qDebug() << "get POST result";
     if ((!reply->error())){
-        qDebug() << "Got in if";
         QJsonParseError parsError;
         QJsonDocument document = QJsonDocument::fromJson(reply->readAll(), &parsError);
-        QByteArray data;
-        data = reply->readAll();
-        qDebug() << QString(data);
-
         if (!document.isNull()){
-            qDebug() << "Got in isNull";
-
             // Забираем из документа корневой объект
             QJsonObject root = document.object();
+            emit sendMessage(root);
         } else {
             qDebug() << parsError.errorString();
         }

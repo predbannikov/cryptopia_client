@@ -25,10 +25,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    network.cpp
+    network.cpp \
+    currentpair.cpp \
+    hystorypair.cpp
 
 HEADERS  += mainwindow.h \
     network.h \
-    mythread.h
+    mythread.h \
+    currentpair.h \
+    hystorypair.h
 
 FORMS    += mainwindow.ui

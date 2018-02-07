@@ -21,16 +21,17 @@ class Network : public QObject
 public:
     Network(QString name);
     ~Network();
+    QByteArray  API_KEY;
+    QByteArray  API_SECRET;
 private:
     QString name;
     QNetworkAccessManager *getNetManager;
     QNetworkAccessManager *postNetManager;
-    QByteArray  API_KEY;
-    QByteArray  API_SECRET;
     const QString URL = "https://www.cryptopia.co.nz/api/";
 signals:
     void send(int);
     void sendMessage(QJsonObject);
+    void sendCountRequest();
 private slots:
     void getBalance();
 
