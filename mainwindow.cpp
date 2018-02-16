@@ -18,7 +18,6 @@ MainWindow::MainWindow(QWidget *parent) :
     qRegisterMetaType<QByteArray>();
     ui->setupUi(this);
 
-
     DrawWidget *drawWidget = new DrawWidget(this);
     indexwidget = ui->stackedWidget->addWidget(drawWidget);
 
@@ -320,36 +319,44 @@ void MainWindow::response(QJsonObject json)                                     
         }
         switch(state)
         {
-            case StateGetHystory:
+            case StateGetHystory:                                                       //        ИСТОРИЯ
             {
                 QStringList list;
+                qint64 time;
+                double price, amount, total;
                 for(int i=0; i<jarray.size(); i++)
                 {
                     QJsonObject jdata = jarray[i].toObject();
                     QString str;
                     if(jdata.contains("Timestamp")){
                         QDateTime timestamp;
-                        timestamp.setTime_t(jdata["Timestamp"].toInt());
+                        time = jdata["Timestamp"].toInt();
+                        timestamp.setTime_t(time);
                         str.append(timestamp.toString("yyyy.MM.dd hh:mm:ss"));
                     }
                     if (jdata.contains("Type")){
                         str.append("\t").append(jdata["Type"].toString());
                     }
                     if (jdata.contains("Price")){
-                        str.append("\tPrice ").append(QString::number(jdata["Price"].toDouble(),'f',8));
+                        price = jdata["Price"].toDouble();
+                        str.append("\tPrice ").append(QString::number(price,'f',8));
                     }
                     if (jdata.contains("Amount")){
-                        str.append("\tAmount ").append(QString::number(jdata["Amount"].toDouble(),'f',8));
+                        amount = jdata["Amount"].toDouble();
+                        str.append("\tAmount ").append(QString::number(amount,'f',8));
                     }
                     if (jdata.contains("Total")){
-                        str.append("\tTotal ").append(QString::number(jdata["Total"].toDouble(),'f',8));
+                        total = jdata["Total"].toDouble();
+                        str.append("\tTotal ").append(QString::number(total,'f',8));
                     }
+
+                    hystory.addDeal(time, price, amount, total);
                     list << str;
                 }
                 modelHystory->setStringList(list);
                 break;
             }
-            case StateGetMarket:
+            case StateGetMarket:                                                        //          КОТИРОВКИ ПАР
             {
                 for(int i=0; i<jarray.size(); i++)
                 {
@@ -464,6 +471,7 @@ void MainWindow::response(QJsonObject json)                                     
                         curr.total = jobj["Total"].toDouble();
                     }
                     bayOrderModel->appendOrder(curr);
+                    orders.addOrder(curr.price, curr.volume, curr.total, 0);
                 }
             }
             if(jdata.contains("Sell")){
@@ -487,10 +495,12 @@ void MainWindow::response(QJsonObject json)                                     
                         curr.total = jobj["Total"].toDouble();
                     }
                     sellOrderModel->appendOrder(curr);
+                    orders.addOrder(curr.price, curr.volume, curr.total, 1);
                 }
                 ui->tableViewUp->scrollToBottom();
             }
-
+            // отобразить ордера
+            updateOrders();
         } else {
 //                QJsonObject jdata = json["Data"].toObject();
             qDebug() << "One object: " << jdata["Label"].toString();
@@ -1007,4 +1017,21 @@ void MainWindow::on_tableBalance_clicked(const QModelIndex &index)
 void MainWindow::on_pushButton_12_clicked()
 {
     ui->stackedWidget_2->setCurrentIndex(2);
+}
+
+void MainWindow::on_pushButton_13_clicked()
+{
+    GetHystory(1261);
+}
+
+void MainWindow::on_dateTimeEdit_dateTimeChanged(const QDateTime &dateTime)
+{
+    hystory.getVolume(dateTime.toSecsSinceEpoch(), ui->dateTimeEdit_2->dateTime().toSecsSinceEpoch());
+}
+
+void MainWindow::updateOrders()
+{
+
+//    bayOrderModel->appendOrder();
+
 }

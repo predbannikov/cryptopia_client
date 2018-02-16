@@ -27,12 +27,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     network.cpp \
     currentpair.cpp \
-    hystorypair.cpp
+    hystorypair.cpp \
+    orders.cpp
 
 HEADERS  += mainwindow.h \
     network.h \
     mythread.h \
     currentpair.h \
-    hystorypair.h
+    hystorypair.h \
+    orders.h
 
 FORMS    += mainwindow.ui

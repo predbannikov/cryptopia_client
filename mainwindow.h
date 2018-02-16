@@ -15,6 +15,8 @@
 #include <QElapsedTimer>
 #include "mythread.h"
 #include "network.h"
+#include "hystorypair.h"
+#include "orders.h"
 
 
 //Q_DECLARE_METATYPE(QAbstractSocket::QByteArray)
@@ -224,6 +226,9 @@ private:
     enum StateThemes {darkTheme=0, customTheme=1} stateTheme = darkTheme;
     QHash <StateThemes,QString> themes;
 
+    HystoryDeals hystory;
+    Orders  orders;
+
 private slots:
 
     void on_getRequest_clicked();
@@ -262,6 +267,12 @@ private slots:
     void on_tableBalance_clicked(const QModelIndex &index);
 
     void on_pushButton_12_clicked();
+
+    void on_pushButton_13_clicked();
+
+    void on_dateTimeEdit_dateTimeChanged(const QDateTime &dateTime);
+
+    void updateOrders();
 
 public slots:
     void GetMarket(int id);
