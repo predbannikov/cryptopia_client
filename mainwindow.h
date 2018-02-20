@@ -13,22 +13,26 @@
 #include <QByteArray>
 #include <QStringListModel>
 #include <QElapsedTimer>
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
 #include "mythread.h"
 #include "network.h"
 #include "hystorypair.h"
 #include "orders.h"
+#include "pairs.h"
+#include "graphics.h"
 
 
-//Q_DECLARE_METATYPE(QAbstractSocket::QByteArray)
 
 namespace Ui {
 class MainWindow;
 }
 
-
 struct RequestData {
     QString url;
 };
+
+static QString dbgMessage;
 
 //*********************    ModelBalance    ************************
 class ModelBalance: public QAbstractTableModel
@@ -52,8 +56,8 @@ public:
     const int COLUMN = 11;
 
     ModelBalance(QObject* parent = 0);
-    int rowCount( const QModelIndex& ) const override {return balances.count();};
-    int columnCount( const QModelIndex&  ) const override {return COLUMN;};
+    int rowCount( const QModelIndex& ) const override;
+    int columnCount( const QModelIndex&  ) const override;
     QVariant data( const QModelIndex& index, int role ) const;
     bool setData(const QModelIndex &index,const QVariant& value, int role ) override;
     QVariant headerData( int section, Qt::Orientation orientation, int role ) const;
@@ -76,103 +80,6 @@ public slots:
     void selectedRow(QModelIndex index);
 signals:
 };
-
-//*********************    ModelOrders    ************************
-class ModelOrders: public QAbstractTableModel
-{
-    Q_OBJECT
-public:
-    struct Order {
-        int Id;
-        QString label;
-        double price;
-        double volume;
-        double total;
-    };
-
-    const int COLUMN = 3;
-
-    ModelOrders(QObject* parent = 0);
-    int rowCount( const QModelIndex& ) const override {return orders.count();};
-    int columnCount( const QModelIndex&  ) const override {return COLUMN;};
-    QVariant data( const QModelIndex& index, int role ) const;
-    bool setData(const QModelIndex &index,const QVariant& value, int role ) override;
-    QVariant headerData( int section, Qt::Orientation orientation, int role ) const;
-    Qt::ItemFlags flags( const QModelIndex& index ) const;
-    bool removeRows(int position, int rows, const QModelIndex &parent) override;
-    void appendOrder(Order ord);
-    void clearOrders();
-
-    enum KeyMarkets{
-        Price, Volume, Total,
-        TradePairId, Label
-    };
-
-    typedef QList<Order> Orders;
-    Orders orders;
-public slots:
-
-    void selectedRow(QModelIndex index);
-signals:
-    void sendPrice(Order ord);
-};
-
-
-
-//*********************    TableModel    ************************
-
-class TableModel: public QAbstractTableModel
-{
-    Q_OBJECT
-public:
-    struct Currency {
-        int Id;
-        QString label;
-        long double lastPrice;
-        bool filter;
-    };
-
-    const int COLUMN = 4;
-
-    TableModel(QObject* parent = 0);
-    int rowCount( const QModelIndex& ) const override {return currencies.count();};
-    int columnCount( const QModelIndex&  ) const override {return COLUMN;};
-    QVariant data( const QModelIndex& index, int role ) const;
-    bool setData(const QModelIndex &index,const QVariant& value, int role ) override;
-    QVariant headerData( int section, Qt::Orientation orientation, int role ) const;
-    Qt::ItemFlags flags( const QModelIndex& index ) const;
-    bool removeRows(int position, int rows, const QModelIndex &parent) override;
-    void appendCurrency(Currency cur);
-    void clearCurrencies();
-
-    enum KeyMarkets{
-        filter=0 , Label, LastPrice, TradePairId,
-        AskPrice, BidPrice, Low, High, Volume,
-        BuyVolume, SellVolume, Change, Open, Close,
-        BaseVolume, BaseBuyVolume, BaseSellVolume
-    };
-
-    typedef QList<Currency> Currencies;
-    Currencies currencies;
-public slots:
-
-//    void replaceCheck(QModelIndex index);
-    void selectedRow(QModelIndex index);
-signals:
-    void getMarket(int id);
-};
-
-//*********************    DrawWidget    ************************
-
-class DrawWidget : public QWidget
-{
-    Q_OBJECT
-public:
-    DrawWidget(QWidget* parent = 0);
-    void paintEvent(QPaintEvent *);
-
-};
-
 
 //*********************    MainWindow    ************************
 class MainWindow : public QMainWindow
@@ -209,30 +116,30 @@ private:
         int step;
     } marketOption;
 
+    ModelPairs::Currency curCoin;
 
 
     QString printJsonValueType(QJsonValue type);
-    bool loadConfig();
 
     Network *network;
-    TableModel *tableModel;
+    ModelPairs *modelPairs;
     QItemSelectionModel selection;
     QPainter *paint;
     QStringListModel *modelHystory;
     ModelOrders     *sellOrderModel;
     ModelOrders     *bayOrderModel;
     ModelBalance    *modelBalance;
+    QGraphicsScene  *grScene;
+    DrawWidget *drawWidget;
 
     enum StateThemes {darkTheme=0, customTheme=1} stateTheme = darkTheme;
     QHash <StateThemes,QString> themes;
 
     HystoryDeals hystory;
-    Orders  orders;
 
 private slots:
 
     void on_getRequest_clicked();
-    void on_clearte_clicked();
     void on_exitButton_clicked();
     void on_postRequest_clicked();
     void on_saveConfig_clicked();
@@ -254,7 +161,6 @@ private slots:
     void on_pushButton_11_clicked();
 
     void on_HrzTblHdr_clicked();
-    void setPrice(ModelOrders::Order ord);
 
     void on_bayAmount_valueChanged(double arg1);
 
@@ -272,9 +178,15 @@ private slots:
 
     void on_dateTimeEdit_dateTimeChanged(const QDateTime &dateTime);
 
-    void updateOrders();
+    void on_sbround_valueChanged(int arg1);
+
+    void on_filterPairs_clicked();
+
+    void on_chkbksFindProfit_clicked();
 
 public slots:
+    void setPrice(double price, double amount);
+    bool loadConfig();
     void GetMarket(int id);
     void GetHystory(int id);
     void GetOrders(int id);
@@ -282,8 +194,6 @@ public slots:
     void setMarket(int pairId);
     void countRequest();
 protected:
-    void paintEvent(QPaintEvent *);
-    TableModel::Currency  currency;
 signals:
     void sendKey(QByteArray);
     void sendJson(QJsonObject);

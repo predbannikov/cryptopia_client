@@ -5,7 +5,6 @@
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <windows.h>
 #include <QUrlQuery>
 #include <QNetworkReply>
 #include <QUrl>

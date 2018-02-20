@@ -52,7 +52,7 @@
            <string notr="true">text-align: center</string>
           </property>
           <property name="text">
-           <string>Получить валюты</string>
+           <string>get currencies</string>
           </property>
           <property name="checkable">
            <bool>false</bool>
@@ -68,7 +68,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Запрос post</string>
+           <string>request post</string>
           </property>
          </widget>
         </item>
@@ -84,7 +84,14 @@
            <string notr="true">text-align: center</string>
           </property>
           <property name="text">
-           <string>Сменить тему</string>
+           <string>day/night mode</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_14">
+          <property name="text">
+           <string>test</string>
           </property>
          </widget>
         </item>
@@ -97,28 +104,28 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>получить ордера</string>
+           <string>request odrers test</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_13">
           <property name="text">
-           <string>история</string>
+           <string>hystory test</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QLabel" name="lbSuccess">
           <property name="text">
-           <string>TextLabel</string>
+           <string>services</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="saveConfig">
           <property name="text">
-           <string>Сохранить</string>
+           <string>Save</string>
           </property>
          </widget>
         </item>
@@ -131,7 +138,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Закрыть приложение</string>
+           <string>Close</string>
           </property>
          </widget>
         </item>
@@ -160,7 +167,7 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>300</width>
+              <width>330</width>
               <height>16777215</height>
              </size>
             </property>
@@ -191,8 +198,11 @@
                <property name="autoFillBackground">
                 <bool>true</bool>
                </property>
+               <property name="alternatingRowColors">
+                <bool>false</bool>
+               </property>
                <property name="selectionMode">
-                <enum>QAbstractItemView::SingleSelection</enum>
+                <enum>QAbstractItemView::NoSelection</enum>
                </property>
                <property name="selectionBehavior">
                 <enum>QAbstractItemView::SelectRows</enum>
@@ -223,7 +233,7 @@
                 <bool>true</bool>
                </property>
                <property name="selectionMode">
-                <enum>QAbstractItemView::SingleSelection</enum>
+                <enum>QAbstractItemView::NoSelection</enum>
                </property>
                <property name="selectionBehavior">
                 <enum>QAbstractItemView::SelectRows</enum>
@@ -242,15 +252,24 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_6">
             <item>
-             <widget class="QSpinBox" name="spinBox">
+             <widget class="QSpinBox" name="sbround">
               <property name="alignment">
                <set>Qt::AlignCenter</set>
               </property>
               <property name="buttonSymbols">
                <enum>QAbstractSpinBox::UpDownArrows</enum>
               </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
               <property name="maximum">
-               <number>7</number>
+               <number>8</number>
+              </property>
+              <property name="value">
+               <number>8</number>
+              </property>
+              <property name="displayIntegerBase">
+               <number>9</number>
               </property>
              </widget>
             </item>
@@ -460,6 +479,12 @@
                </property>
                <item row="5" column="1">
                 <widget class="QDoubleSpinBox" name="sellTotal">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="buttonSymbols">
+                  <enum>QAbstractSpinBox::NoButtons</enum>
+                 </property>
                  <property name="decimals">
                   <number>8</number>
                  </property>
@@ -642,6 +667,12 @@
                </property>
                <item row="5" column="1">
                 <widget class="QDoubleSpinBox" name="bayTotal">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="buttonSymbols">
+                  <enum>QAbstractSpinBox::NoButtons</enum>
+                 </property>
                  <property name="decimals">
                   <number>8</number>
                  </property>
@@ -830,14 +861,14 @@
           <item>
            <widget class="QPushButton" name="pushButton_6">
             <property name="text">
-             <string>Информация</string>
+             <string>Info</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton_3">
             <property name="text">
-             <string>График</string>
+             <string>Graphic</string>
             </property>
            </widget>
           </item>
@@ -875,14 +906,14 @@
             <item>
              <widget class="QLabel" name="lbStat">
               <property name="text">
-               <string>Статистика</string>
+               <string>Statistis</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QLabel" name="lbInsidMsg">
               <property name="text">
-               <string>Вложенные сообщения</string>
+               <string>Important messages</string>
               </property>
              </widget>
             </item>
@@ -930,7 +961,6 @@ color: #5EED00;
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
           </property>
-          <zorder>stackedWidget</zorder>
          </widget>
         </item>
         <item row="3" column="0">
@@ -949,6 +979,33 @@ color: #5EED00;
             <bool>true</bool>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_23">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>about the coin</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QDateTimeEdit" name="dateTimeEdit_2">
+              <property name="dateTime">
+               <datetime>
+                <hour>18</hour>
+                <minute>0</minute>
+                <second>0</second>
+                <year>2018</year>
+                <month>2</month>
+                <day>7</day>
+               </datetime>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="0">
              <widget class="QDateTimeEdit" name="dateTimeEdit">
               <property name="dateTime">
@@ -977,33 +1034,6 @@ color: #5EED00;
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_23">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>О монете</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QDateTimeEdit" name="dateTimeEdit_2">
-              <property name="dateTime">
-               <datetime>
-                <hour>18</hour>
-                <minute>0</minute>
-                <second>0</second>
-                <year>2018</year>
-                <month>2</month>
-                <day>7</day>
-               </datetime>
-              </property>
-             </widget>
-            </item>
            </layout>
           </widget>
           <widget class="QWidget" name="page_2"/>
@@ -1020,11 +1050,44 @@ color: #5EED00;
          <enum>QLayout::SetDefaultConstraint</enum>
         </property>
         <item>
-         <widget class="QPushButton" name="pushButton">
-          <property name="text">
-           <string>cryptopia</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QCheckBox" name="chkbksFindProfit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>find profit</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton">
+            <property name="text">
+             <string>cryptopia</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="filterPairs">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>filter</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="QTableView" name="listCurrencies">
@@ -1032,7 +1095,7 @@ color: #5EED00;
            <bool>true</bool>
           </property>
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>

@@ -7,7 +7,6 @@
 #include <QFontMetrics>
 #include <QSize>
 
-
 static const char* NAME_FILE_CONFIG = "config";
 int indexwidget;
 
@@ -16,9 +15,20 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     qRegisterMetaType<QByteArray>();
+
     ui->setupUi(this);
 
-    DrawWidget *drawWidget = new DrawWidget(this);
+//    grScene = new QGraphicsScene(QRectF(-100, -100, 300, 300));
+//    QGraphicsScene scene(QRectF(-100, -100, 300, 300));
+    drawWidget = new DrawWidget(this);
+//    drawWidget->setScene(&scene);
+
+//    QGraphicsRectItem* pRectItem = new QGraphicsRectItem(0, &scene);
+//    pRectItem->setPen(QPen(Qt::black));
+//    pRectItem->setBrush(QBrush(Qt::green));
+//    pRectItem->setRect(QRectF(-30, -30, 120, 80));
+//    pRectItem->setFlags(QGraphicsItem::ItemIsMovable);
+
     indexwidget = ui->stackedWidget->addWidget(drawWidget);
 
     themes.insert(customTheme,this->styleSheet());
@@ -49,16 +59,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 //    netthr->start();
 
-    if(loadConfig())
-    {
-        qDebug() << "configuration data is loaded";
-    } else {
-        qDebug() << "config data not load";
-    }
 
-    tableModel = new TableModel(this);
-    sellOrderModel = new ModelOrders(this);
-    bayOrderModel = new ModelOrders(this);
+    modelPairs = new ModelPairs(this);
+    sellOrderModel = new ModelOrders(this, "Sell");
+    bayOrderModel = new ModelOrders(this, "Bay");
     modelHystory = new QStringListModel(this);
     modelBalance = new ModelBalance(this);
     ui->tableBalance->setModel(modelBalance);
@@ -70,9 +74,16 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tableBalance->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->tableBalance->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 
+    if(loadConfig())
+    {
+        qDebug() << "configuration data is loaded";
+    } else {
+        qDebug() << "config data not load";
+    }
+
 //    ui->listCurrencies->setMaximumWidth(300);
 //    ui->listCurrencies->setSortingEnabled(true);
-    ui->listCurrencies->setModel(tableModel);
+    ui->listCurrencies->setModel(modelPairs);
     ui->listCurrencies->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->listCurrencies->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     ui->listCurrencies->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
@@ -80,14 +91,16 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->listCurrencies->horizontalHeader()->setStyleSheet("QHeaderView::section { background-color:#323232 }");
 //    ui->listCurrencies->verticalHeader()->setDefaultSectionSize(22);
 
-    QObject::connect(ui->listCurrencies, SIGNAL(clicked(QModelIndex)), tableModel, SLOT(selectedRow(QModelIndex)) );
+    QObject::connect(ui->listCurrencies, SIGNAL(clicked(QModelIndex)), modelPairs, SLOT(selectedRow(QModelIndex)) );
     QObject::connect(ui->tableViewUp, SIGNAL(clicked(QModelIndex)), sellOrderModel, SLOT(selectedRow(QModelIndex)) );
     QObject::connect(ui->tableViewDown, SIGNAL(clicked(QModelIndex)), bayOrderModel, SLOT(selectedRow(QModelIndex)) );
-    QObject::connect(tableModel, &TableModel::getMarket, this, &MainWindow::setMarket);
+    QObject::connect(modelPairs, &ModelPairs::getMarket, this, &MainWindow::setMarket);
     QObject::connect(sellOrderModel, &ModelOrders::sendPrice ,this,&MainWindow::setPrice);
     QObject::connect(bayOrderModel, &ModelOrders::sendPrice ,this,&MainWindow::setPrice);
 
-    on_getRequest_clicked();
+//    on_getRequest_clicked();
+    on_filterPairs_clicked();
+
 }
 
 MainWindow::~MainWindow()
@@ -125,11 +138,6 @@ void MainWindow::on_getRequest_clicked()
 
 }
 
-void MainWindow::on_clearte_clicked()
-{
-
-}
-
 void MainWindow::on_exitButton_clicked()
 {
     this->close();
@@ -137,12 +145,10 @@ void MainWindow::on_exitButton_clicked()
 
 void MainWindow::on_postRequest_clicked()
 {
-
     QJsonDocument json;
     QJsonObject obj;
     obj["POST"]=QString("GetBalance");
     sendJson(obj);
-
 }
 
 bool MainWindow::loadConfig()
@@ -158,10 +164,12 @@ bool MainWindow::loadConfig()
         ui->leApiKey->setText(str);
         stream >> str;
         ui->leApiSecret->setText(str);
+        stream >> modelPairs->favoriteCoin;
         configFile.close();
 
         network->API_KEY.append(ui->leApiKey->text());
         network->API_SECRET.append(ui->leApiSecret->text());
+
         return true;
     } else {
         qDebug() << "conf file not found";
@@ -169,7 +177,7 @@ bool MainWindow::loadConfig()
     }
 }
 
-void MainWindow::launchMarket()    //Вызывается в таймере
+void MainWindow::launchMarket()                                                 //Вызывается в таймере
 {
     //Тут сделать
     //проверку ответов с сервера, за определённую еденицу времени, возможно придётся вычислить максимальное отведённое время
@@ -203,6 +211,7 @@ void MainWindow::launchMarket()    //Вызывается в таймере
     marketOption.tickOrders++;
     marketOption.tickMarkets++;
 
+
 }
 
 void MainWindow::setMarket(int pairId)
@@ -225,6 +234,7 @@ void MainWindow::setMarket(int pairId)
     marketOption.tickMarkets = 0;
     marketOption.msupdata = 700;
     timer->start(marketOption.msupdata);
+
 }
 
 void MainWindow::countRequest()
@@ -247,6 +257,7 @@ void MainWindow::on_saveConfig_clicked()
     if (configFile.isOpen()){
         csFile << ui->leApiKey->text();
         csFile << ui->leApiSecret->text();
+        csFile << modelPairs->favoriteCoin;
         qDebug() << "configuration save success";
     } else {
         qDebug() << "file not open";
@@ -265,7 +276,7 @@ void MainWindow::response(QJsonObject json)                                     
     {
         if(json["Success"].toBool())
         {
-            ui->lbStat->setText("Успешно");
+            ui->lbStat->setText("Success");
             ui->lbStat->setStyleSheet("background-color: #5EED00; font-size: 15px; font-weight: bold; color: #000000");
             ui->lbStat->setAlignment(Qt::AlignCenter);
         } else {
@@ -276,7 +287,7 @@ void MainWindow::response(QJsonObject json)                                     
     {
         if(printJsonValueType(json.value("Message"))=="Null")
         {
-            ui->lbInsidMsg->setText("Сообщений нет");
+            ui->lbInsidMsg->setText("no messages");
             ui->lbInsidMsg->setStyleSheet("background-color: #828282; font-size: 15px; font-weight: bold; color: #000000");
             ui->lbInsidMsg->setAlignment(Qt::AlignCenter);
         } else {
@@ -309,8 +320,8 @@ void MainWindow::response(QJsonObject json)                                     
         else if(stobj.contains("BidPrice"))
         {
             state = StateGetMarket;
-            if(!tableModel->currencies.isEmpty())
-                tableModel->clearCurrencies();
+            if(!modelPairs->currencies.isEmpty())
+                modelPairs->clearCurrencies();
         } else if(stobj.contains("Available"))
         {
             state = StateAvailable;
@@ -358,25 +369,7 @@ void MainWindow::response(QJsonObject json)                                     
             }
             case StateGetMarket:                                                        //          КОТИРОВКИ ПАР
             {
-                for(int i=0; i<jarray.size(); i++)
-                {
-                    QJsonObject jdata = jarray[i].toObject();
-                    TableModel::Currency curr;
-                    if(jdata.contains("Label") && jdata["Label"].isString())
-                    {
-                        curr.label = jdata["Label"].toString();
-                    }
-                    if(jdata.contains("TradePairId") && jdata["TradePairId"].isDouble())
-                    {
-                        curr.Id = jdata["TradePairId"].toInt();
-                    }
-                    if(jdata.contains("LastPrice") && jdata["LastPrice"].isDouble())
-                    {
-                        curr.lastPrice = jdata["LastPrice"].toDouble();
-//                        curr.filter = false;
-                    }
-                    tableModel->appendCurrency(curr);
-                }
+                modelPairs->setNewPairs(jarray);
                 break;
             }
             case StateAvailable:
@@ -446,61 +439,31 @@ void MainWindow::response(QJsonObject json)                                     
     {
         QJsonObject jdata = json["Data"].toObject();
         if(jdata.contains("Buy") || (jdata.contains("Sell"))){
-            if(!sellOrderModel->orders.isEmpty())
-                sellOrderModel->clearOrders();
-            if(!bayOrderModel->orders.isEmpty())
-                bayOrderModel->clearOrders();
             if(jdata.contains("Buy")){                                       // Парсим список ордеров
                 QJsonArray jarray = jdata["Buy"].toArray();
                 if(jarray.empty())
                     return;
-                for(int i=0; i<jarray.size(); i++)
+                bayOrderModel->appendOrders(jarray);
+                if(bayOrderModel->saveIndex.isValid())
                 {
-                    QJsonObject jobj = jarray[i].toObject();
-                    ModelOrders::Order curr;
-                    if(jobj.contains("Price") && jobj["Price"].isDouble())
-                    {
-                        curr.price = jobj["Price"].toDouble();
-                    }
-                    if(jobj.contains("Volume") && jobj["Volume"].isDouble())
-                    {
-                        curr.volume = jobj["Volume"].toDouble();
-                    }
-                    if(jobj.contains("Total") && jobj["Total"].isDouble())
-                    {
-                        curr.total = jobj["Total"].toDouble();
-                    }
-                    bayOrderModel->appendOrder(curr);
-                    orders.addOrder(curr.price, curr.volume, curr.total, 0);
+                    ui->tableViewDown->selectRow(bayOrderModel->saveIndex.row());
+                } else {
+                    ui->tableViewDown->scrollToTop();
                 }
             }
             if(jdata.contains("Sell")){
                 QJsonArray jarray = jdata["Sell"].toArray();
                 if(jarray.empty())
                     return;
-                for(int i=jarray.size()-1; i>=0; i--)
+                sellOrderModel->appendOrders(jarray);
+                if(!sellOrderModel->saveIndex.isValid())
                 {
-                    QJsonObject jobj = jarray[i].toObject();
-                    ModelOrders::Order curr;
-                    if(jobj.contains("Price") && jobj["Price"].isDouble())
-                    {
-                        curr.price = jobj["Price"].toDouble();
-                    }
-                    if(jobj.contains("Volume") && jobj["Volume"].isDouble())
-                    {
-                        curr.volume = jobj["Volume"].toDouble();
-                    }
-                    if(jobj.contains("Total") && jobj["Total"].isDouble())
-                    {
-                        curr.total = jobj["Total"].toDouble();
-                    }
-                    sellOrderModel->appendOrder(curr);
-                    orders.addOrder(curr.price, curr.volume, curr.total, 1);
+                    ui->tableViewUp->scrollToBottom();
                 }
-                ui->tableViewUp->scrollToBottom();
+                else {
+                    ui->tableViewUp->selectRow(sellOrderModel->saveIndex.row());
+                }
             }
-            // отобразить ордера
-            updateOrders();
         } else {
 //                QJsonObject jdata = json["Data"].toObject();
             qDebug() << "One object: " << jdata["Label"].toString();
@@ -515,7 +478,7 @@ void MainWindow::response(QJsonObject json)                                     
             ui->label_23->setText(str);
         }
     }
-    qDebug() << "Время парсинга " << time.nsecsElapsed();
+//    qDebug() << "Время парсинга " << time.nsecsElapsed();
 }
 
 void MainWindow::on_pushButton_3_clicked()
@@ -552,115 +515,6 @@ void MainWindow::GetOrders(int id)
     sendJson(obj);
 }
 
-/***********************************************************************************
- ***                                 TableModel                                  **/
-
-TableModel::TableModel(QObject *parent): QAbstractTableModel(parent)                // Торговые пары
-{
-
-}
-
-QVariant TableModel::data(const QModelIndex &index, int role) const
-{
-    QVariant result;
-    if (!index.isValid())
-        return QVariant();
-
-    switch(role){
-        case Qt::CheckStateRole:
-            if (index.column()==filter)
-                return currencies.at(index.row()).filter;
-            break;
-        case Qt::DisplayRole:{
-            const TableModel::Currency &rec = currencies.at(index.row());
-            int key = index.column();
-            switch( key) {
-                case TradePairId:
-                    return rec.Id;
-                case Label:
-                    return rec.label;
-                case LastPrice:
-                    return QString::number(rec.lastPrice, 'f', 8);
-            }
-        }
-        default:
-            return QVariant();
-    }
-//     Если необходимо отобразить картинку - ловим роль Qt::DecorationRole
-    return result;
-}
-
-bool TableModel::setData(const QModelIndex &index, const QVariant &value, int role)
-{
-    if (index.isValid() && role == Qt::SizeHintRole){
-
-    }
-}
-
-QVariant TableModel::headerData(int section, Qt::Orientation orientation, int role) const
-{
-    // Для любой роли, кроме запроса на отображение, прекращаем обработку
-    if (role != Qt::DisplayRole)
-    return QVariant();
-    // формируем заголовки по номуру столбца
-    if (orientation == Qt::Horizontal) {
-        switch (section) {
-            case TradePairId:
-            return tr("Id");
-            case Label:
-            return tr("Label");
-            case LastPrice:
-            return tr("LastPrice");
-            case filter:
-            return tr("X");
-        }
-    }
-    return QVariant();
-}
-
-Qt::ItemFlags TableModel::flags(const QModelIndex &index) const
-{
-    if(!index.isValid())
-        return Qt::NoItemFlags;
-    return /*Qt::ItemIsEditable |*/ Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-
-}
-
-bool TableModel::removeRows(int position, int rows, const QModelIndex &parent)
-{
-    beginRemoveRows(QModelIndex(), position, position+rows-1);
-    for (int row = 0; row < rows; ++row) {
-        currencies.removeAt(position);
-    }
-    endRemoveRows();
-    return true;
-}
-
-void TableModel::appendCurrency(TableModel::Currency cur)
-{
-    beginInsertRows(QModelIndex(), 1, 1);
-    currencies.append(cur);
-    endInsertRows();
-}
-
-void TableModel::clearCurrencies()
-{
-    removeRows(0,currencies.count(),QModelIndex());
-    currencies.clear();
-}
-
-void TableModel::selectedRow(QModelIndex index)
-{
-    if(index.column()==0){
-        currencies[index.row()].filter ^= 1;
-        emit dataChanged( index, index );
-    } else {
-        emit getMarket(this->currencies.at(index.row()).Id);
-
-    }
-
-}
-
 void MainWindow::on_pushButton_8_clicked()
 {
     ui->stackedWidget_2->setCurrentIndex(1);
@@ -669,10 +523,6 @@ void MainWindow::on_pushButton_8_clicked()
 void MainWindow::on_pushButton_7_clicked()
 {
     ui->stackedWidget_2->setCurrentIndex(0);
-}
-
-void MainWindow::paintEvent(QPaintEvent *)
-{
 }
 
 void MainWindow::on_themes_clicked()
@@ -688,130 +538,19 @@ void MainWindow::on_themes_clicked()
     this->setStyleSheet(themes.value(stateTheme));
 }
 
-DrawWidget::DrawWidget(QWidget *parent):
-QWidget(parent)
-{
-
-}
-
-void DrawWidget::paintEvent(QPaintEvent *)
-{
-    QPainter painter(this);
-    painter.setPen(Qt::green);
-    painter.setFont(QFont("Arial", this->rect().height()/3));
-    painter.drawText(this->rect(), Qt::AlignCenter, "Crypto bot");
-
-}
-
 void MainWindow::on_pushButton_clicked()
 {
     ui->stackedWidget->setCurrentIndex(indexwidget);
 
 }
 
-void MainWindow::on_pushButton_11_clicked()             // Тестовая кнопка
+void MainWindow::on_pushButton_11_clicked()                                          // Тестовая кнопка
 {
 //    GetMarket(1261);
-    GetOrders(1261);
-}
-
-
-/***********************************************************************************
- ***                                 ModelOrders                                 **/
-
-ModelOrders::ModelOrders(QObject *parent): QAbstractTableModel(parent)
-{
-}
-
-QVariant ModelOrders::data(const QModelIndex &index, int role) const
-{
-    QVariant result;
-    if (!index.isValid())
-        return QVariant();
-
-    switch(role){
-        case Qt::DisplayRole:
-        {
-            const Order &rec = orders.at(index.row());
-            int key = index.column();
-            switch( key) {
-                case Price:
-                    return QString::number(rec.price, 'f', 8);
-                case Volume:
-                    return QString::number(rec.volume, 'f', 8);
-                case Total:
-                    return QString::number(rec.total, 'f', 8);
-                }
-        }
-//        case Qt::TextColorRole:
-//            return QColor();
-//        case Qt::BackgroundRole:
-//            return QColor(44, 214, 21, 10);
-        default:
-            return QVariant();
-    }
-//     Если необходимо отобразить картинку - ловим роль Qt::DecorationRole
-    return result;
-}
-
-bool ModelOrders::setData(const QModelIndex &index, const QVariant &value, int role)
-{
-
-}
-
-QVariant ModelOrders::headerData(int section, Qt::Orientation orientation, int role) const
-{
-    // Для любой роли, кроме запроса на отображение, прекращаем обработку
-    if (role != Qt::DisplayRole)
-    return QVariant();
-    // формируем заголовки по номуру столбца
-    if (orientation == Qt::Horizontal) {
-        switch (section) {
-            case Price:
-            return tr("Price");
-            case Volume:
-            return tr("Volume");
-            case Total:
-            return tr("Total");
-        }
-    }
-    return QVariant();
-}
-
-Qt::ItemFlags ModelOrders::flags(const QModelIndex &index) const
-{
-    if(!index.isValid())
-        return Qt::NoItemFlags;
-    return /*Qt::ItemIsEditable |*/ Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-}
-
-bool ModelOrders::removeRows(int position, int rows, const QModelIndex &parent)
-{
-    beginRemoveRows(QModelIndex(), position, position+rows-1);
-    for (int row = 0; row < rows; ++row) {
-        orders.removeAt(position);
-    }
-    endRemoveRows();
-    return true;
-}
-
-void ModelOrders::appendOrder(ModelOrders::Order ord)
-{
-    beginInsertRows(QModelIndex(), 1, 1);
-    orders.append(ord);
-    endInsertRows();
-}
-
-void ModelOrders::clearOrders()
-{
-    removeRows(0,orders.count(),QModelIndex());
-    orders.clear();
-}
-
-void ModelOrders::selectedRow(QModelIndex index)
-{
-    qDebug() << "index row=" << index.row();
-    emit sendPrice(orders.at(index.row()));
+    // ETN/BTC 5662
+    // ETH/BTC 5203
+    // BCH/BTC 5355
+    GetOrders(5355);
 }
 
 void MainWindow::on_HrzTblHdr_clicked()
@@ -826,18 +565,18 @@ void MainWindow::on_HrzTblHdr_clicked()
     this->update();
 }
 
-void MainWindow::setPrice(ModelOrders::Order ord)
+void MainWindow::setPrice(double price, double amount)
 {
-    ui->bayAmount->setValue(ord.volume);
-    ui->bayPrice->setValue(ord.price);
-    ui->baySum->setValue((ord.volume*ord.price));
-    ui->bayFee->setValue(ord.volume*ord.price/500);
+    ui->bayAmount->setValue(amount);
+    ui->bayPrice->setValue(price);
+    ui->baySum->setValue(amount*price);
+    ui->bayFee->setValue(amount*price/500);
     ui->bayTotal->setValue(ui->baySum->value()+ui->bayFee->value());
-    ui->sellAmount->setValue(ord.volume);
-    ui->sellPrice->setValue(ord.price);
-    ui->sellSum->setValue((ord.volume*ord.price));
-    ui->sellFee->setValue(ord.volume*ord.price/500);
-    ui->sellTotal->setValue(ui->baySum->value()+ui->bayFee->value());
+    ui->sellAmount->setValue(amount);
+    ui->sellPrice->setValue(price);
+    ui->sellSum->setValue(amount*price);
+    ui->sellFee->setValue(amount*price/500);
+    ui->sellTotal->setValue(ui->baySum->value()-ui->bayFee->value());
 
 }
 
@@ -868,7 +607,7 @@ void MainWindow::on_sellAmount_valueChanged(double arg1)
     double sum, fee, total, price=ui->sellPrice->value();
     sum = arg1*price;
     fee = sum/500;
-    total = sum+fee;
+    total = sum-fee;
     ui->sellSum->setValue(sum);
     ui->sellFee->setValue(fee);
     ui->sellTotal->setValue(total);
@@ -879,7 +618,7 @@ void MainWindow::on_sellPrice_valueChanged(double arg1)
     double sum, fee, total, amount=ui->sellAmount->value();
     sum = arg1*amount;
     fee = sum/500;
-    total = sum+fee;
+    total = sum-fee;
     ui->sellSum->setValue(sum);
     ui->sellFee->setValue(fee);
     ui->sellTotal->setValue(total);
@@ -889,6 +628,10 @@ ModelBalance::ModelBalance(QObject *parent): QAbstractTableModel(parent)
 {
 
 }
+
+int ModelBalance::rowCount(const QModelIndex &) const {return balances.count();}
+
+int ModelBalance::columnCount(const QModelIndex &) const {return COLUMN;}
 
 QVariant ModelBalance::data(const QModelIndex &index, int role) const
 {
@@ -1029,9 +772,40 @@ void MainWindow::on_dateTimeEdit_dateTimeChanged(const QDateTime &dateTime)
     hystory.getVolume(dateTime.toSecsSinceEpoch(), ui->dateTimeEdit_2->dateTime().toSecsSinceEpoch());
 }
 
-void MainWindow::updateOrders()
+void MainWindow::on_sbround_valueChanged(int arg1)
 {
-
-//    bayOrderModel->appendOrder();
-
+    if(arg1 == 0){
+        bayOrderModel->filter = 1;
+        return;
+    }
+    int i = 10;
+    for(int j=1; j<arg1; ++j)
+        i *=10;
+    bayOrderModel->filter = i;
+    sellOrderModel->filter = i;
+    bayOrderModel->checkFilter();
+    sellOrderModel->checkFilter();
 }
+
+void MainWindow::on_filterPairs_clicked()
+{
+    if(ui->filterPairs->isChecked())
+    {
+        modelPairs->chkfiltr = true;
+    } else {
+        modelPairs->chkfiltr = false;
+    }
+    modelPairs->checkFilter();
+}
+
+void MainWindow::on_chkbksFindProfit_clicked()
+{
+    if(ui->chkbksFindProfit->isChecked())
+    {
+        modelPairs->chkFindProfit = true;
+    } else {
+        modelPairs->chkFindProfit = false;
+    }
+    modelPairs->checkFilter();
+}
+
