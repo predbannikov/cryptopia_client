@@ -116,6 +116,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="pushButton_15">
+          <property name="text">
+           <string>dataChanged()</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QLabel" name="lbSuccess">
           <property name="text">
            <string>services</string>
@@ -286,7 +293,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="stackedWidget_2Page1">
            <layout class="QGridLayout" name="gridLayout_2">
@@ -301,6 +308,20 @@
              <widget class="QPushButton" name="pushButton_2">
               <property name="text">
                <string>PushButton</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="pushButton_4">
+              <property name="text">
+               <string>PushButton</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="HrzTblHdr">
+              <property name="text">
+               <string>Включить/выключить хидер в ордерах</string>
               </property>
              </widget>
             </item>
@@ -438,20 +459,6 @@
               </layout>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QPushButton" name="pushButton_4">
-              <property name="text">
-               <string>PushButton</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="HrzTblHdr">
-              <property name="text">
-               <string>Включить/выключить хидер в ордерах</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </widget>
           <widget class="QWidget" name="stackedWidget_2Page2">
@@ -480,10 +487,10 @@
                <item row="5" column="1">
                 <widget class="QDoubleSpinBox" name="sellTotal">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="buttonSymbols">
-                  <enum>QAbstractSpinBox::NoButtons</enum>
+                  <enum>QAbstractSpinBox::UpDownArrows</enum>
                  </property>
                  <property name="decimals">
                   <number>8</number>
@@ -547,6 +554,12 @@
                </item>
                <item row="2" column="1">
                 <widget class="QDoubleSpinBox" name="sellSum">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="buttonSymbols">
+                  <enum>QAbstractSpinBox::NoButtons</enum>
+                 </property>
                  <property name="decimals">
                   <number>8</number>
                  </property>
@@ -668,10 +681,10 @@
                <item row="5" column="1">
                 <widget class="QDoubleSpinBox" name="bayTotal">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="buttonSymbols">
-                  <enum>QAbstractSpinBox::NoButtons</enum>
+                  <enum>QAbstractSpinBox::UpDownArrows</enum>
                  </property>
                  <property name="decimals">
                   <number>8</number>
@@ -732,6 +745,12 @@
                </item>
                <item row="2" column="1">
                 <widget class="QDoubleSpinBox" name="baySum">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="buttonSymbols">
+                  <enum>QAbstractSpinBox::NoButtons</enum>
+                 </property>
                  <property name="decimals">
                   <number>8</number>
                  </property>
@@ -749,7 +768,7 @@
                   <double>999999999.000000000000000</double>
                  </property>
                  <property name="singleStep">
-                  <double>0.000010000000000</double>
+                  <double>0.000001000000000</double>
                  </property>
                 </widget>
                </item>
@@ -837,8 +856,63 @@
             </item>
            </layout>
           </widget>
+          <widget class="QWidget" name="pageOpenOrders">
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <item>
+             <widget class="QPushButton" name="pushButton_18">
+              <property name="text">
+               <string>Update</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTableView" name="tableOrders">
+              <property name="baseSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="contextMenuPolicy">
+               <enum>Qt::CustomContextMenu</enum>
+              </property>
+              <property name="editTriggers">
+               <set>QAbstractItemView::NoEditTriggers</set>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::SingleSelection</enum>
+              </property>
+              <property name="selectionBehavior">
+               <enum>QAbstractItemView::SelectRows</enum>
+              </property>
+              <attribute name="horizontalHeaderCascadingSectionResizes">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="horizontalHeaderMinimumSectionSize">
+               <number>25</number>
+              </attribute>
+              <attribute name="verticalHeaderVisible">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="verticalHeaderDefaultSectionSize">
+               <number>18</number>
+              </attribute>
+              <attribute name="verticalHeaderMinimumSectionSize">
+               <number>17</number>
+              </attribute>
+             </widget>
+            </item>
+           </layout>
+          </widget>
           <widget class="QWidget" name="balance">
            <layout class="QVBoxLayout" name="verticalLayout_7">
+            <item>
+             <widget class="QPushButton" name="pushButton_16">
+              <property name="text">
+               <string>Узнать баланс</string>
+              </property>
+             </widget>
+            </item>
             <item>
              <widget class="QTableView" name="tableBalance">
               <property name="selectionMode">
@@ -880,6 +954,13 @@
            <widget class="QPushButton" name="pushButton_8">
             <property name="text">
              <string>Market</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_17">
+            <property name="text">
+             <string>Open orders</string>
             </property>
            </widget>
           </item>
@@ -1102,7 +1183,7 @@ color: #5EED00;
           </property>
           <property name="minimumSize">
            <size>
-            <width>100</width>
+            <width>90</width>
             <height>0</height>
            </size>
           </property>
@@ -1186,7 +1267,7 @@ color: #5EED00;
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>false</bool>
+    <bool>true</bool>
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>

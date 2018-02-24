@@ -24,12 +24,16 @@ public:
         int level;
         int intensColor;
     };
+    enum Type { sell, bay, non} type;
 
-    enum Type { sell, bay} type;
-
-    static double startProfit;
-
-
+    struct SelectOrder {
+        QModelIndex indexStart, indexStop;
+        int id;
+        double startProfit;
+        double selectPrice;
+        Type type;
+    };
+    static SelectOrder selOrder;
 
     const int COLUMN = 3;
 
@@ -49,24 +53,24 @@ public:
     void checkLevel();
     void checkColor();
     void checkSelect();
+    void applyChange();
+    void mysuperfunk();
+    void updateCell();
     enum KeyMarkets{
         Price, Volume, Total,
         TradePairId, Label
     };
-    QModelIndex saveIndex;
+    QModelIndex saveIndex, saveIndex2;
     typedef QList<Order> Orders;
-//    typedef QMap<double, Order> Orders;
     Orders orders, sourceOrd;
     double filter = 100000000;
-    int select = 0;
-
-
 
 public slots:
 
     void selectedRow(QModelIndex index);
 signals:
     void sendPrice(double price, double amount);
+    void clearSelection(Type type);
 };
 
 

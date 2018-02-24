@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     hystorypair.cpp \
     orders.cpp \
     pairs.cpp \
-    graphics.cpp
+    graphics.cpp \
+    openordrers.cpp
 
 HEADERS  += mainwindow.h \
     network.h \
@@ -39,6 +40,7 @@ HEADERS  += mainwindow.h \
     hystorypair.h \
     orders.h \
     pairs.h \
-    graphics.h
+    graphics.h \
+    openordrers.h
 
 FORMS    += mainwindow.ui

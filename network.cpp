@@ -56,40 +56,37 @@ void Network::receivJson(QJsonObject json)
     {
         if(json["POST"] == QString("GetBalance"))
         {
-            QString url = URL + "GetBalance";
-            getBalance();
+            getBalance("GetBalance");
+        }
+        if(json["POST"] == QString("GetOpenOrders"))
+        {
+            getBalance("GetOpenOrders");
+        }
+        if(json["POST"] == QString("CancelTrade"))
+        {
+//            QJson
+            getBalance("CancelTrade");
         }
     } else {
         qDebug() << "got is: else(GET) in: void Network::receivJson(QJsonObject json)";
     }
 }
 
-void Network::getBalance()
+void Network::getBalance(QString request)
 {
+    QString url = URL + request;
     const QByteArray reqjsonrec = "{}";
     QJsonParseError parseError;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(reqjsonrec, &parseError);
-
-
-//    QByteArray API_SECRET;
-//    API_SECRET.append(ui->leApiSecret->text());
-
-//    QString API_KEY = ui->leApiKey->text();
-
     QByteArray requestContentBase64String;
     QByteArray arrayreq = jsonDoc.toJson(QJsonDocument::Compact);
     requestContentBase64String = QCryptographicHash::hash(arrayreq, QCryptographicHash::Md5);
     QByteArray base64 = requestContentBase64String.toBase64();
     qint64 unixtimestamp = QDateTime::currentSecsSinceEpoch();
-
     QString nonce = QString::number(unixtimestamp);
-//    QString signature = API_KEY + "POST" + QString("https:%2f%2fwww.cryptopia.co.nz%2fApi%2fGetBalance%2f").toLower().toStdString().c_str() + nonce + QString(base64);
     QString signature = API_KEY + "POST" + QString(QUrl::toPercentEncoding(
-                "https://www.cryptopia.co.nz/Api/GetBalance","", "/:")).toLower()
+                url,"", "/:")).toLower()
             + nonce + QString(base64);
-//    signature = "d1c55e1cc3234dbebd279e0224c9a959POSThttps%3a%2f%2fwww.cryptopia.co.nz%2fapi%2fgetbalance1515684198mZFLkyvTelC5g8XnyQrpOw==";
-//    nonce = "1515684198";
-    //    QByteArray api_secret = QCryptographicHash::hash(API_SECRET, QCryptographicHash::Md5);
     QByteArray api_secret = QByteArray::fromBase64(API_SECRET);
     QMessageAuthenticationCode code(QCryptographicHash::Sha256);
     code.setKey(api_secret);
@@ -105,7 +102,7 @@ void Network::getBalance()
     QString header_value = "amx " + API_KEY + ":" + hmacsignature + ":" + nonce;
     qDebug() << header_value;
 
-    QNetworkRequest reqest(QUrl(QString("https://www.cryptopia.co.nz/Api/GetBalance").toLower()));
+    QNetworkRequest reqest(QUrl(url.toLower()));
 //    reqest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json;charset=UTF-8");
     reqest.setRawHeader(QByteArray("Content-Type"), "application/json; charset=utf-8");
     reqest.setRawHeader(QByteArray("Authorization"), header_value.toUtf8());
@@ -157,7 +154,7 @@ void Network::postResult(QNetworkReply *reply)
         if (!document.isNull()){
             // Забираем из документа корневой объект
             QJsonObject root = document.object();
-            emit sendMessage(root);
+            emit sendMessagePOST(root);
         } else {
             qDebug() << parsError.errorString();
         }
@@ -166,6 +163,5 @@ void Network::postResult(QNetworkReply *reply)
         qDebug() << "parsError.errorString()";
         qDebug() << reply->errorString();
     }
-
     reply->deleteLater();
 }

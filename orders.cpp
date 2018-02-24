@@ -4,8 +4,7 @@
 /***********************************************************************************
  ***                                 ModelOrders                                 **/
 
-double ModelOrders::startProfit = 0;
-
+ModelOrders::SelectOrder ModelOrders::selOrder;
 
 
 ModelOrders::ModelOrders(QObject *parent, QString name): QAbstractTableModel(parent)
@@ -50,16 +49,35 @@ QVariant ModelOrders::data(const QModelIndex &index, int role) const
 //        case Qt::TextColorRole:
 //            return QColor();
         case Qt::BackgroundRole:
-            if(saveIndex.isValid() && saveIndex.row() == index.row())
+//            qDebug() << "row = " << index.row() << " column = " << index.column();
+            if(selOrder.indexStart.isValid() )   // рисуем выделение
             {
-//                qDebug() << "saveIndex.row = " << saveIndex.row() ;
-                return QColor(0, 0, 255, 100);
+                qDebug() << "sell.start.row = " << selOrder.indexStart.row() << " sell.stop.row = " << selOrder.indexStop.row();
+                    if(selOrder.indexStart.row() == index.row())
+                        return QColor(0, 0, 255, 100);
+                    else{
+                        return QColor(100, 100, 100);
+                    }
             }
             if(type == bay)
+            {
+                if(selOrder.selectPrice < rec.price && selOrder.startProfit > rec.price && selOrder.type == bay){
+                    return QColor(127, 127, 127);
+                } else if(selOrder.selectPrice > rec.price && selOrder.startProfit < rec.price && selOrder.type == sell){
+                    return QColor(127, 127, 127);
+                }
                 return QColor(0, 255, 0, rec.intensColor);
+            }
             else if(type == sell)
+            {
+                if(selOrder.selectPrice < rec.price && selOrder.startProfit > rec.price && selOrder.type == bay){
+                    return QColor(127, 127, 127);
+                } else if(selOrder.selectPrice > rec.price && selOrder.startProfit < rec.price && selOrder.type == sell){
+                    return QColor(127, 127, 127);
+                }
                 return QColor(255, 0, 0, rec.intensColor);
-        default:
+            }
+    default:
             return QVariant();
     }
 //     Если необходимо отобразить картинку - ловим роль Qt::DecorationRole
@@ -68,7 +86,11 @@ QVariant ModelOrders::data(const QModelIndex &index, int role) const
 
 bool ModelOrders::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-
+    if (!index.isValid()) {
+        return false;
+    }
+//    emit dataChanged(createIndex(selOrder.indexStart.row(),0), selOrder.indexStop);
+//    return true;
 }
 
 QVariant ModelOrders::headerData(int section, Qt::Orientation orientation, int role) const
@@ -207,7 +229,7 @@ void ModelOrders::checkFilter()
         qDebug() << "Нет элементов в QList<Order>";
         return;
     }
-    checkLevel();
+//    checkLevel();
     checkColor();
     insertRows(0, countord, QModelIndex());
 }
@@ -253,6 +275,21 @@ void ModelOrders::checkSelect()
 
 }
 
+void ModelOrders::applyChange()
+{
+    //    emit dataChanged(saveIndex, saveIndex2);
+}
+
+void ModelOrders::mysuperfunk()
+{
+
+}
+
+void ModelOrders::updateCell()
+{
+    emit dataChanged(createIndex(1,1), createIndex(2,2));
+}
+
 void ModelOrders::appendOrder(ModelOrders::Order ord)
 {
 
@@ -262,65 +299,103 @@ void ModelOrders::selectedRow(QModelIndex index)
 {
 //    qDebug() << "index row=" << index.row();
     Order ord = orders.at(index.row());
-    if(saveIndex == index)
-    {
-//        select = 0;
-        emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
-        saveIndex = createIndex(-1,-1);
-    }
-    else
-    {
-        if(!saveIndex.isValid())
-        {
-            saveIndex = index;
-            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
-        } else {
-            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
-            saveIndex = index;
-            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
-        }
-    }
-    double price, volume, sum, fee, total;
-    price = ord.price;
-    volume = ord.volume;
+    emit sendPrice(ord.price, ord.volume);      // Отправляем цену и количество монет на покупку в окно покупок и продаж
+//    if(saveIndex.row() == index.row())
+//    {
+//        emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
+//        saveIndex = createIndex(-1,-1);
+//        selOrder.type = non;
+//    }
+//    else
+//    {
+//        if(!saveIndex.isValid())
+//        {
+//            saveIndex = index;
+//            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
+//        } else {
+//            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
+//            saveIndex = index;
+//            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
+//        }
+//    }
+//    double price, volume, sum, fee, total;
+//    price = ord.price;
+//    volume = ord.volume;
 
 
-    emit sendPrice(price, volume);      // Отправляем цену и количество монет на покупку в окно покупок и продаж
-                        // Расчёт, где мы можем начать отбивать прибыль
-    sum = price * volume;
-    fee = sum/500;
-    double x, y1, y2, s=0;
-    if(type == sell)
-    {
-        total = sum - fee;
-        x=price;
-        y1 = x*volume;
-        y2 = y1/500;
-        s = y1 + y2;
-        for(x = price; s > total; x-=0.00000001)
-        {
-            y1 = x*volume;
-            y2 = y1/500;
-            s = y1 + y2;
-        }
-        qDebug() << "startProfit=" << QString::number(startProfit,'f',8);
-        startProfit = x;
+//                        // Расчёт, где мы можем начать отбивать прибыль
+//    sum = price * volume;
+//    fee = sum/500;
+//    double x, y1, y2, s=0;
+//    double d = 0.00000001;
+//    int it = 1;
+//    while(price/it > 0.1)
+//        it *=10;
+//    d *= it;
+//    if(type == sell)
+//    {
+//        total = sum - fee;
+//        x=price;
+//        y1 = x*volume;
+//        y2 = y1/500;
+//        s = y1 + y2;
+//        for(x = price; s > total; x-=d)
+//        {
+//            y1 = x*volume;
+//            y2 = y1/500;
+//            s = y1 + y2;
+//        }
 
-    } else if( type == bay)
-    {
-        total = sum + fee;
-        x=price;
-        y1 = x*volume;
-        y2 = y1/500;
-        s = y1 - y2;
-        for(x = price; s < total; x+=0.00000001)
-        {
-            y1 = x*volume;
-            y2 = y1/500;
-            s = y1 - y2;
-        }
-        qDebug() << "startProfit=" << QString::number(startProfit,'f',8);
-        startProfit = x;
-    }
-    qDebug() << "profit: " << "x=" << QString::number(x,'f',8) << " s=" << QString::number(s,'f',8) << ":" << QString::number(total,'f',8);
+////        qDebug() << "startProfit id=" << QString::number(selOrder.startProfit,'f',8);
+//        selOrder.startProfit = x;
+//        selOrder.type = sell;
+//        selOrder.selectPrice = price;
+//        selOrder.indexStart = index;
+//        int i = orders.size() - 1;
+//        while(orders[i].price < x)
+//            i--;
+//        selOrder.indexStop = createIndex(i, COLUMN);
+//    } else if( type == bay)
+//    {
+//        total = sum + fee;
+//        x=price;
+//        y1 = x*volume;
+//        y2 = y1/500;
+//        s = y1 - y2;
+//        for(x = price; s < total; x+=d)
+//        {
+//            y1 = x*volume;
+//            y2 = y1/500;
+//            s = y1 - y2;
+//        }
+////        qDebug() << "startProfit id=" << QString::number(selOrder.indexStop,'f',8);
+//        selOrder.startProfit = x;
+//        selOrder.type = bay;
+//        selOrder.selectPrice = price;
+
+//    }
+
+//    if(selOrder.indexStart.row() == index.row())
+//    {
+//        emit dataChanged(createIndex(selOrder.indexStart.row(),0), selOrder.indexStop);
+//        qDebug() << "IndexStart.row() = " << selOrder.indexStart.row() << " indexStop.row() = " << selOrder.indexStop.row();
+//        selOrder.indexStart = createIndex(-1,-1);
+//        selOrder.indexStop = createIndex(-1,-1);
+//        selOrder.type = non;
+//    }
+//    else
+//    {
+//        if(!saveIndex.isValid())
+//        {
+//            saveIndex = index;
+//            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
+//        } else {
+//            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
+//            saveIndex = index;
+//            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
+//        }
+//    }
+//    qDebug() << "profit: " << "x=" << QString::number(x,'f',8) << " s=" << QString::number(s,'f',8) << ":" << QString::number(total,'f',8);
+//    emit clearSelection(type);
+
 }

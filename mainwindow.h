@@ -21,6 +21,7 @@
 #include "orders.h"
 #include "pairs.h"
 #include "graphics.h"
+#include "openordrers.h"
 
 
 
@@ -96,7 +97,7 @@ private:
     QFile   configFile;
     QTimer  *timer;
 
-    enum StateResponse{StateGetMarket = 0, StateGetHystory, StateGetOrders, StateGetMyOrders, StateAvailable } stateResponse;
+    enum StateResponse{StateGetMarket = 0, StateGetHystory, StateGetOrders, StateGetMyOrders, StateAvailable, OrderId } stateResponse;
 
     int countreq = 0;
 
@@ -129,22 +130,45 @@ private:
     ModelOrders     *sellOrderModel;
     ModelOrders     *bayOrderModel;
     ModelBalance    *modelBalance;
+    OpenOrdrers     *openOrdrers;
+
     QGraphicsScene  *grScene;
-    DrawWidget *drawWidget;
+    DrawWidget      *drawWidget;
 
     enum StateThemes {darkTheme=0, customTheme=1} stateTheme = darkTheme;
+    enum StateCalculation {stateCalculation = 0, stateWait = 1} stateCalc = stateWait;
     QHash <StateThemes,QString> themes;
 
     HystoryDeals hystory;
 
+public slots:
+    void getResponse(QJsonObject json);
+    void postResponse(QJsonObject json);
+    void setPrice(double price, double amount);
+    bool loadConfig();
+    void GetMarket(int id);
+    void GetHystory(int id);
+    void GetOrders(int id);
+    void launchMarket();
+    void setMarket(int pairId);
+    void countRequest();
+//    void clearSelectOrder(ModelOrders::Type type);
+    void customMenuRequested(QPoint pos);
+    void romoveOrder();
+
+protected:
+signals:
+    void sendKey(QByteArray);
+    void sendJson(QJsonObject);
+
 private slots:
+
 
     void on_getRequest_clicked();
     void on_exitButton_clicked();
     void on_postRequest_clicked();
     void on_saveConfig_clicked();
 
-    void response(QJsonObject json);
 
     void on_pushButton_3_clicked();
 
@@ -184,20 +208,20 @@ private slots:
 
     void on_chkbksFindProfit_clicked();
 
-public slots:
-    void setPrice(double price, double amount);
-    bool loadConfig();
-    void GetMarket(int id);
-    void GetHystory(int id);
-    void GetOrders(int id);
-    void launchMarket();
-    void setMarket(int pairId);
-    void countRequest();
-protected:
-signals:
-    void sendKey(QByteArray);
-    void sendJson(QJsonObject);
+    void on_pushButton_14_clicked();
 
+    void on_bayTotal_valueChanged(double arg1);
+
+    void on_sellTotal_valueChanged(double arg1);
+
+    void on_pushButton_15_clicked();
+
+    void on_pushButton_16_clicked();
+
+    void on_pushButton_17_clicked();
+
+
+    void on_pushButton_18_clicked();
 };
 
 #endif // MAINWINDOW_H

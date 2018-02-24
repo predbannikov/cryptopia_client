@@ -50,25 +50,44 @@ MainWindow::MainWindow(QWidget *parent) :
 //    QObject::connect(netthr, &QThread::finished, network, &Network::deleteLater, Qt::QueuedConnection);
     QObject::connect(this, &MainWindow::sendKey, network, &Network::receivKey, Qt::QueuedConnection);
     QObject::connect(this, &MainWindow::sendJson, network, &Network::receivJson, Qt::QueuedConnection);
-    QObject::connect(network, &Network::sendMessage, this, &MainWindow::response, Qt::QueuedConnection);
+    QObject::connect(network, &Network::sendMessage, this, &MainWindow::getResponse, Qt::QueuedConnection);
+    QObject::connect(network, &Network::sendMessagePOST, this, &MainWindow::postResponse, Qt::QueuedConnection);
     QObject::connect(network, &Network::sendCountRequest, this, &MainWindow::countRequest,  Qt::QueuedConnection);
 
 //    QObject::connect(netthr, &QThread::started, network, &Network::doWork, Qt::QueuedConnection);
 //    connect(network, SIGNAL(send(int)), this, SLOT(update(int)));
 //    connect(this, &MainWindow::sendKey, network, &Network::receivKey, Qt::ConnectionType::DirectConnection );
 
-//    netthr->start();
+//    netthr->start();  `
 
 
     modelPairs = new ModelPairs(this);
     sellOrderModel = new ModelOrders(this, "Sell");
+    ui->tableViewUp->setModel(sellOrderModel);
     bayOrderModel = new ModelOrders(this, "Bay");
+    ui->tableViewDown->setModel(bayOrderModel);
     modelHystory = new QStringListModel(this);
+    ui->listHystory->setModel(modelHystory);
     modelBalance = new ModelBalance(this);
     ui->tableBalance->setModel(modelBalance);
-    ui->listHystory->setModel(modelHystory);
-    ui->tableViewDown->setModel(bayOrderModel);
-    ui->tableViewUp->setModel(sellOrderModel);
+    openOrdrers = new OpenOrdrers(this);
+
+    ui->tableOrders->setModel(openOrdrers);
+//    ui->tableOrders->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);                // Сжать или растянуть ячейки на видемой области отмен
+    ui->tableOrders->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);    // Ячейка по размеру информации
+    ui->tableOrders->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->tableOrders->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    ui->tableOrders->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+    ui->tableOrders->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
+    ui->tableOrders->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
+    ui->tableOrders->horizontalHeader()->setSectionResizeMode(6, QHeaderView::ResizeToContents);
+    ui->tableOrders->horizontalHeader()->setSectionResizeMode(7, QHeaderView::ResizeToContents);
+    ui->tableOrders->horizontalHeader()->setSectionResizeMode(8, QHeaderView::ResizeToContents);
+    ui->tableOrders->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(ui->tableOrders, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(customMenuRequested(QPoint)));
+
+
     ui->tableViewDown->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->tableViewUp->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->tableBalance->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -84,7 +103,7 @@ MainWindow::MainWindow(QWidget *parent) :
 //    ui->listCurrencies->setMaximumWidth(300);
 //    ui->listCurrencies->setSortingEnabled(true);
     ui->listCurrencies->setModel(modelPairs);
-    ui->listCurrencies->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+//    ui->listCurrencies->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->listCurrencies->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     ui->listCurrencies->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
 //    ui->listCurrencies->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
@@ -97,6 +116,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(modelPairs, &ModelPairs::getMarket, this, &MainWindow::setMarket);
     QObject::connect(sellOrderModel, &ModelOrders::sendPrice ,this,&MainWindow::setPrice);
     QObject::connect(bayOrderModel, &ModelOrders::sendPrice ,this,&MainWindow::setPrice);
+//    QObject::connect(sellOrderModel, &ModelOrders::clearSelection, this, &MainWindow::clearSelectOrder);
+//    QObject::connect(bayOrderModel, &ModelOrders::clearSelection, this, &MainWindow::clearSelectOrder);
 
 //    on_getRequest_clicked();
     on_filterPairs_clicked();
@@ -131,7 +152,7 @@ void MainWindow::on_getRequest_clicked()
     // Получаем данные, а именно JSON файл с сайта по определённому url
 //    networkManager->get(QNetworkRequest(QUrl("https://www.cryptopia.co.nz/api/GetCurrencies")));
 
-    QJsonDocument json;
+//    QJsonDocument json;
     QJsonObject obj;
     obj["GET"]=QString("GetMarkets");
     sendJson(obj);
@@ -145,9 +166,9 @@ void MainWindow::on_exitButton_clicked()
 
 void MainWindow::on_postRequest_clicked()
 {
-    QJsonDocument json;
+//    QJsonDocument json;
     QJsonObject obj;
-    obj["POST"]=QString("GetBalance");
+    obj["POST"]=QString("GetOpenOrders");
     sendJson(obj);
 }
 
@@ -243,6 +264,49 @@ void MainWindow::countRequest()
     ui->countRequest->setText(QString::number(countreq));
 }
 
+void MainWindow::customMenuRequested(QPoint pos)
+{
+    qDebug() << "pos=" << pos.x() << " " << pos.y();
+    /* Создаем объект контекстного меню */
+    QMenu * menu = new QMenu(this);
+    /* Создаём действия для контекстного меню */
+    QAction * editDevice = new QAction(trUtf8("Редактировать"), this);
+    QAction * deleteOrder = new QAction(trUtf8("Удалить"), this);
+    /* Подключаем СЛОТы обработчики для действий контекстного меню */
+//    connect(editDevice, SIGNAL(triggered()), this, SLOT(slotEditRecord()));     // Обработчик вызова диалога редактирования
+    connect(deleteOrder, SIGNAL(triggered()), this, SLOT(romoveOrder())); // Обработчик удаления записи
+    /* Устанавливаем действия в меню */
+    menu->addAction(editDevice);
+    menu->addAction(deleteOrder);
+    /* Вызываем контекстное меню */
+    menu->popup(ui->tableOrders->viewport()->mapToGlobal(pos));
+}
+
+void MainWindow::romoveOrder()
+{
+    int rm = ui->tableOrders->selectionModel()->currentIndex().row();
+    QJsonObject obj;
+    obj["POST"]=QString("CancelTrade");
+    obj["Type"]=QString("Trade");
+    obj["OrderId"]=rm;
+    sendJson(obj);
+}
+
+//void MainWindow::clearSelectOrder(ModelOrders::Type type)
+//{
+//    switch(type){
+//    case    ModelOrders::sell:
+//        ui->tableViewDown->clearSelection();
+//        break;
+//    case    ModelOrders::bay:
+//        ui->tableViewUp->clearSelection();
+//        break;
+//    case ModelOrders::non:
+//        qDebug() << "void MainWindow::clearSelectOrder(ModelOrders::Type type); Получен non";
+//        break;
+//    }
+//}
+
 void MainWindow::on_saveConfig_clicked()
 {
     if(QFile::exists(NAME_FILE_CONFIG)){
@@ -266,7 +330,7 @@ void MainWindow::on_saveConfig_clicked()
     configFile.close();
 }
 
-void MainWindow::response(QJsonObject json)                                        // Парсинг ответа
+void MainWindow::getResponse(QJsonObject json)                                        // Парсинг ответа
 {
 //    qDebug() << "response: start parsing JSON";
     QElapsedTimer time;
@@ -367,12 +431,12 @@ void MainWindow::response(QJsonObject json)                                     
                 modelHystory->setStringList(list);
                 break;
             }
-            case StateGetMarket:                                                        //          КОТИРОВКИ ПАР
+            case StateGetMarket:                                            //          КОТИРОВКИ ПАР
             {
                 modelPairs->setNewPairs(jarray);
                 break;
             }
-            case StateAvailable:
+            case StateAvailable:                                            //          БАЛАНС
             {
             for(int i=0; i<jarray.size(); i++)
             {
@@ -428,7 +492,7 @@ void MainWindow::response(QJsonObject json)                                     
             }
             default:
             {
-                QString error = "Не подходящего состояния для парсинга ответа с сервера ";
+                QString error = "Не подходящего состояния для парсинга ответа GET с сервера ";
                 ui->lbInsidMsg->setText(error);
                 qDebug() << error;
                 return;
@@ -478,7 +542,138 @@ void MainWindow::response(QJsonObject json)                                     
             ui->label_23->setText(str);
         }
     }
-//    qDebug() << "Время парсинга " << time.nsecsElapsed();
+    //    qDebug() << "Время парсинга " << time.nsecsElapsed();
+}
+
+void MainWindow::postResponse(QJsonObject json)
+{
+    //    qDebug() << "response: start parsing JSON";
+        QElapsedTimer time;
+        time.start();
+        if(json.contains("Success") && json["Success"].isBool())
+        {
+            if(json["Success"].toBool())
+            {
+                ui->lbStat->setText("Success");
+                ui->lbStat->setStyleSheet("background-color: #5EED00; font-size: 15px; font-weight: bold; color: #000000");
+                ui->lbStat->setAlignment(Qt::AlignCenter);
+            } else {
+                qDebug() << "json response get not Success";
+            }
+        }
+        if(json.contains("Message") )
+        {
+            if(printJsonValueType(json.value("Message"))=="Null")
+            {
+                ui->lbInsidMsg->setText("no messages");
+                ui->lbInsidMsg->setStyleSheet("background-color: #828282; font-size: 15px; font-weight: bold; color: #000000");
+                ui->lbInsidMsg->setAlignment(Qt::AlignCenter);
+            } else {
+                QString str = json["Message"].toString();
+                ui->lbInsidMsg->setText(str);
+                ui->lbInsidMsg->setStyleSheet("background-color: #FF0000; font-size: 15px; font-weight: bold; color: #000000");
+                ui->lbInsidMsg->setAlignment(Qt::AlignCenter);
+            }
+        }
+        if(json.contains("Error") && !json["Error"].isNull()){
+            QString str = json["Error"].toString();
+            ui->lbInsidMsg->setText(str);
+            ui->lbInsidMsg->setStyleSheet("background-color: #FF0000; font-size: 15px; font-weight: bold; color: #000000");
+            ui->lbInsidMsg->setAlignment(Qt::AlignCenter);
+        }
+        if(json.contains("Data") && json["Data"].isArray())     // *************** Если вложен МАССИВ *****************
+        {
+            QJsonArray jarray = json["Data"].toArray();
+            qDebug() << "Array objects: " << jarray.count();
+            if(jarray.empty())
+                return;
+            StateResponse state;
+            QJsonObject stobj = jarray[0].toObject();
+            if(stobj.contains("Available"))
+            {
+                state = StateAvailable;
+                if(!modelBalance->balances.isEmpty())
+                    modelBalance->clearBalance();
+            } else if (stobj.contains("OrderId"))
+            {
+                state = OrderId;
+            }
+            switch(state)
+            {
+                case StateAvailable:                                            //          БАЛАНС
+                {
+                    for(int i=0; i<jarray.size(); i++)
+                    {
+                        QJsonObject jdata = jarray[i].toObject();
+                        ModelBalance::Balance bal;
+                        if(jdata.contains("CurrencyId") && jdata["CurrencyId"].isDouble())
+                        {
+                            bal.Id = jdata["CurrencyId"].toInt();
+                        }
+                        if(jdata.contains("Symbol") && jdata["Symbol"].isString())
+                        {
+                            bal.coin = jdata["Symbol"].toString();
+                        }
+                        if(jdata.contains("Total") && jdata["Total"].isDouble())
+                        {
+                            bal.total = jdata["Total"].toDouble();
+                        }
+                        if(jdata.contains("Available") && jdata["Available"].isDouble())
+                        {
+                            bal.available = jdata["Available"].toDouble();
+                        }
+                        if(jdata.contains("Unconfirmed") && jdata["Unconfirmed"].isDouble())
+                        {
+                            bal.unconfirmed = jdata["Unconfirmed"].toDouble();
+                        }
+                        if(jdata.contains("HeldForTrades") && jdata["HeldForTrades"].isDouble())
+                        {
+                            bal.heldForTrades = jdata["HeldForTrades"].toDouble();
+                        }
+                        if(jdata.contains("PendingWithdraw") && jdata["PendingWithdraw"].isDouble())
+                        {
+                            bal.pendingWithdraw = jdata["PendingWithdraw"].toDouble();
+                        }
+                        if(jdata.contains("Address") && jdata["Address"].isString())
+                        {
+                            bal.address = jdata["Address"].toString();
+                        }
+                        if(jdata.contains("BaseAddress") && jdata["BaseAddress"].isString())
+                        {
+                            bal.baseAddress = jdata["BaseAddress"].toString();
+                        }
+                        if(jdata.contains("Status") && jdata["Status"].isString())
+                        {
+                            bal.status = jdata["Status"].toString();
+                        }
+                        if(jdata.contains("StatusMessage") && jdata["StatusMessage"].isString())
+                        {
+                            bal.statusMsg = jdata["StatusMessage"].toString();
+                        }
+                        modelBalance->appendBalance(bal);
+                    }
+                    break;
+                }
+                case OrderId:
+                {
+                    openOrdrers->setNewOpenOrders(jarray);
+                    break;
+                }
+                default:
+                {
+                    QString error = "Не подходящего состояния для парсинга ответа POST с сервера ";
+                    ui->lbInsidMsg->setText(error);
+                    qDebug() << error;
+                    return;
+                }
+            }
+        }
+        if(json.contains("Data") && json["Data"].isObject())    // *************** Если вложен ОДИН объект *****************
+        {
+            QJsonObject jdata = json["Data"].toObject();
+            qDebug() << "Ответ с сервера на POST запрос >> вложен ОДИН объект";
+        }
+        //    qDebug() << "Время парсинга " << time.nsecsElapsed();
 }
 
 void MainWindow::on_pushButton_3_clicked()
@@ -582,35 +777,47 @@ void MainWindow::setPrice(double price, double amount)
 
 void MainWindow::on_bayAmount_valueChanged(double arg1)
 {
+    if(stateCalc == stateCalculation)
+        return;
     double sum, fee, total, price=ui->bayPrice->value();
     sum = arg1*price;
     fee = sum/500;
     total = sum+fee;
+    stateCalc = stateCalculation;
     ui->baySum->setValue(sum);
     ui->bayFee->setValue(fee);
     ui->bayTotal->setValue(total);
+    stateCalc = stateWait;
 }
 
 void MainWindow::on_bayPrice_valueChanged(double arg1)
 {
+    if(stateCalc == stateCalculation)
+        return;
     double sum, fee, total, amount=ui->bayAmount->value();
     sum = arg1*amount;
     fee = sum/500;
     total = sum+fee;
+    stateCalc = stateCalculation;
     ui->baySum->setValue(sum);
     ui->bayFee->setValue(fee);
     ui->bayTotal->setValue(total);
+    stateCalc = stateWait;
 }
 
 void MainWindow::on_sellAmount_valueChanged(double arg1)
 {
+    if(stateCalc == stateCalculation)
+        return;
     double sum, fee, total, price=ui->sellPrice->value();
     sum = arg1*price;
     fee = sum/500;
     total = sum-fee;
+    stateCalc = stateCalculation;
     ui->sellSum->setValue(sum);
     ui->sellFee->setValue(fee);
     ui->sellTotal->setValue(total);
+    stateCalc = stateWait;
 }
 
 void MainWindow::on_sellPrice_valueChanged(double arg1)
@@ -757,9 +964,9 @@ void MainWindow::on_tableBalance_clicked(const QModelIndex &index)
     qDebug() << "index row=" << index.row();
 }
 
-void MainWindow::on_pushButton_12_clicked()
+void MainWindow::on_pushButton_12_clicked()         // Узнать баланс
 {
-    ui->stackedWidget_2->setCurrentIndex(2);
+    ui->stackedWidget_2->setCurrentIndex(3);
 }
 
 void MainWindow::on_pushButton_13_clicked()
@@ -809,3 +1016,76 @@ void MainWindow::on_chkbksFindProfit_clicked()
     modelPairs->checkFilter();
 }
 
+
+void MainWindow::on_pushButton_14_clicked()
+{
+    sellOrderModel->applyChange();
+}
+
+void MainWindow::on_bayTotal_valueChanged(double arg1)
+{
+    if(stateCalc == stateCalculation)
+        return;
+    double price = ui->bayPrice->value();
+    if(qFuzzyIsNull(price))
+        return;
+    if(qFuzzyIsNull(arg1))
+        return;
+    double fee, sum, total = arg1;
+    sum = total/(1+1./500.);
+    fee = sum/500.;
+    stateCalc = stateCalculation;
+    ui->bayAmount->setValue(sum/price);
+    ui->bayFee->setValue(fee);
+    ui->baySum->setValue(sum);
+    stateCalc = stateWait;
+}
+
+void MainWindow::on_sellTotal_valueChanged(double arg1)
+{
+    if(stateCalc == stateCalculation)
+        return;
+    double price = ui->sellPrice->value();
+    if(qFuzzyIsNull(price))
+        return;
+    if(qFuzzyIsNull(arg1))
+        return;
+    double fee, sum, total = arg1;
+//    qDebug() << "price=" <<  QString::number(price, 'f', 8);
+    sum = total/(1-1./500.);
+//    qDebug() << "sum" << QString::number(sum, 'f', 8);
+    fee = sum/500;
+//    qDebug() << "fee" << QString::number(fee, 'f', 8);
+    stateCalc = stateCalculation;
+    ui->sellAmount->setValue(sum/price);
+    ui->sellFee->setValue(fee);
+    ui->sellSum->setValue(sum);
+    stateCalc = stateWait;
+}
+
+void MainWindow::on_pushButton_15_clicked()
+{
+    sellOrderModel->updateCell();
+}
+
+void MainWindow::on_pushButton_16_clicked()
+{
+    QJsonObject obj;
+    obj["POST"]=QString("GetBalance");
+    sendJson(obj);
+}
+
+void MainWindow::on_pushButton_17_clicked()
+{
+    QJsonObject obj;
+    obj["POST"]=QString("GetOpenOrders");
+    sendJson(obj);
+    ui->stackedWidget_2->setCurrentIndex(2);
+}
+
+void MainWindow::on_pushButton_18_clicked()
+{
+    QJsonObject obj;
+    obj["POST"]=QString("GetOpenOrders");
+    sendJson(obj);
+}
