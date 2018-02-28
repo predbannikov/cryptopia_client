@@ -29,6 +29,10 @@ MainWindow::MainWindow(QWidget *parent) :
 //    pRectItem->setRect(QRectF(-30, -30, 120, 80));
 //    pRectItem->setFlags(QGraphicsItem::ItemIsMovable);
 
+    QPixmap buttonIcon("galka.png");
+    ui->pushIcon->setIcon(QIcon(buttonIcon));
+//    ui->pushIcon->setIconSize(buttonIcon.rect().size());
+
     indexwidget = ui->stackedWidget->addWidget(drawWidget);
 
     themes.insert(customTheme,this->styleSheet());
@@ -58,8 +62,9 @@ MainWindow::MainWindow(QWidget *parent) :
 //    connect(network, SIGNAL(send(int)), this, SLOT(update(int)));
 //    connect(this, &MainWindow::sendKey, network, &Network::receivKey, Qt::ConnectionType::DirectConnection );
 
-//    netthr->start();  `
+//    netthr->start();
 
+//    trade = new Trade(0,0,0);
 
     modelPairs = new ModelPairs(this);
     sellOrderModel = new ModelOrders(this, "Sell");
@@ -73,7 +78,6 @@ MainWindow::MainWindow(QWidget *parent) :
     openOrdrers = new OpenOrdrers(this);
 
     ui->tableOrders->setModel(openOrdrers);
-//    ui->tableOrders->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);                // Сжать или растянуть ячейки на видемой области отмен
     ui->tableOrders->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);    // Ячейка по размеру информации
     ui->tableOrders->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     ui->tableOrders->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
@@ -82,10 +86,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tableOrders->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
     ui->tableOrders->horizontalHeader()->setSectionResizeMode(6, QHeaderView::ResizeToContents);
     ui->tableOrders->horizontalHeader()->setSectionResizeMode(7, QHeaderView::ResizeToContents);
-    ui->tableOrders->horizontalHeader()->setSectionResizeMode(8, QHeaderView::ResizeToContents);
+    ui->tableOrders->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);                // Сжать или растянуть ячейки на видемой области
     ui->tableOrders->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(ui->tableOrders, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(customMenuRequested(QPoint)));
+    connect(ui->tableOrders, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(customMenuRequested(QPoint)));      //Контекстное меню в таблице открытых ордеров
+
+//    connect(trade, &Trade::bayCoin, this, &MainWindow::bayCoin);
+//    connect(trade, &Trade::sellCoin, this, &MainWindow::sellCoin);
+//    connect(this, &MainWindow::sendIdOrder, trade, &Trade::setIdOrder);
+//    connect(openOrdrers, &OpenOrdrers::sendNotifi, trade, &Trade::getNotifi);
 
 
     ui->tableViewDown->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -103,7 +112,7 @@ MainWindow::MainWindow(QWidget *parent) :
 //    ui->listCurrencies->setMaximumWidth(300);
 //    ui->listCurrencies->setSortingEnabled(true);
     ui->listCurrencies->setModel(modelPairs);
-//    ui->listCurrencies->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->listCurrencies->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->listCurrencies->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     ui->listCurrencies->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
 //    ui->listCurrencies->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
@@ -207,6 +216,7 @@ void MainWindow::launchMarket()                                                 
     //подсчёт всех объемов и вывод на панель
     //запрос на текущий курс и отправка его на отрисовку графика
 //    qDebug() << "got is" << marketOption.Id;
+    // marketOption.Id = текущие запросы по айди
     if(marketOption.timeoutMarkets == marketOption.tickMarkets)
     {
         on_getRequest_clicked();    //Markets
@@ -227,11 +237,19 @@ void MainWindow::launchMarket()                                                 
         GetOrders(marketOption.Id);
         marketOption.tickOrders = 0;
     }
+    if(marketOption.timeoutOpenOrders == marketOption.tickOpenOrders)
+    {
+
+        getOpenOrders();
+        marketOption.tickOpenOrders = 0;
+    }
     marketOption.tickHystory++;
     marketOption.tickMarket++;
     marketOption.tickOrders++;
     marketOption.tickMarkets++;
+    marketOption.tickOpenOrders++;
 
+//    trade->check(curCoin.Id, curCoin.lastPrice);
 
 }
 
@@ -243,16 +261,16 @@ void MainWindow::setMarket(int pairId)
         timer->stop();
     }
     marketOption.timeoutHystory = 8;
-    marketOption.timeoutMarket = 2;     // Текущая котировка выбранной пары
+    marketOption.timeoutMarket = 3;     // Текущая котировка выбранной пары
     marketOption.timeoutMarkets = 20;   // Котировки всех пар
     marketOption.timeoutOrders = 5;
-
-
+    marketOption.timeoutOpenOrders = 4;
 
     marketOption.tickHystory = 0;
     marketOption.tickMarket = 0;
     marketOption.tickOrders = 0;
     marketOption.tickMarkets = 0;
+    marketOption.tickOpenOrders = 0;
     marketOption.msupdata = 700;
     timer->start(marketOption.msupdata);
 
@@ -270,13 +288,13 @@ void MainWindow::customMenuRequested(QPoint pos)
     /* Создаем объект контекстного меню */
     QMenu * menu = new QMenu(this);
     /* Создаём действия для контекстного меню */
-    QAction * editDevice = new QAction(trUtf8("Редактировать"), this);
-    QAction * deleteOrder = new QAction(trUtf8("Удалить"), this);
+//    QAction * editDevice = new QAction(trUtf8("Редактировать"), this);
+    QAction * deleteOrder = new QAction(trUtf8("Remove order"), this);
     /* Подключаем СЛОТы обработчики для действий контекстного меню */
 //    connect(editDevice, SIGNAL(triggered()), this, SLOT(slotEditRecord()));     // Обработчик вызова диалога редактирования
     connect(deleteOrder, SIGNAL(triggered()), this, SLOT(romoveOrder())); // Обработчик удаления записи
     /* Устанавливаем действия в меню */
-    menu->addAction(editDevice);
+//    menu->addAction(editDevice);
     menu->addAction(deleteOrder);
     /* Вызываем контекстное меню */
     menu->popup(ui->tableOrders->viewport()->mapToGlobal(pos));
@@ -284,28 +302,82 @@ void MainWindow::customMenuRequested(QPoint pos)
 
 void MainWindow::romoveOrder()
 {
-    int rm = ui->tableOrders->selectionModel()->currentIndex().row();
+    deleteorder = openOrdrers->myOrders.at(ui->tableOrders->selectionModel()->currentIndex().row()).orderId;
     QJsonObject obj;
     obj["POST"]=QString("CancelTrade");
     obj["Type"]=QString("Trade");
-    obj["OrderId"]=rm;
+    obj["OrderId"]=deleteorder;
     sendJson(obj);
 }
 
-//void MainWindow::clearSelectOrder(ModelOrders::Type type)
-//{
-//    switch(type){
-//    case    ModelOrders::sell:
-//        ui->tableViewDown->clearSelection();
-//        break;
-//    case    ModelOrders::bay:
-//        ui->tableViewUp->clearSelection();
-//        break;
-//    case ModelOrders::non:
-//        qDebug() << "void MainWindow::clearSelectOrder(ModelOrders::Type type); Получен non";
-//        break;
-//    }
-//}
+void MainWindow::bayCoin(double price, double volume, int id)       // Слот на покупку
+{
+    QJsonObject obj;
+    obj["POST"]=QString("SubmitTrade");
+    obj["TradePairId"]=id;
+    obj["Type"]=QString("Bay");
+    obj["Rate"]=price;
+    obj["Amount"]=volume;
+//    openOrdrers->setNotifi(price);      // Установим уведомление для класса OpenOrders, отправив ему прайс запроса
+                                        // Если необходимо чтоб класс нас уведомил что ордер был создан
+    emit sendJson(obj);
+}
+
+void MainWindow::sellCoin(double price, double volume, int id)      // Слот на продажу
+{
+    QJsonObject obj;
+    obj["POST"]=QString("SubmitTrade");
+    obj["TradePairId"]=id;
+    obj["Type"]=QString("Sell");
+    obj["Rate"]=price;
+    obj["Amount"]=volume;
+        sendJson(obj);
+}
+
+void MainWindow::createTrade()
+{
+    Trade *trade = new Trade(this, "up");
+    trade->setLevel(ui->spinLevelPrice->value());
+    trade->setMaxTrade(ui->spinMaxTrade->value());
+    trade->setProcent(ui->spinProfit->value());
+    trade->setName(ui->leNameLevel->text());
+    trade->setIdTrade(ui->spinLevelId->value());
+    trade->setTimeWait(ui->spinTimeWaitLevel->value());
+    trade->initTrade();                                     // Обязательно запустить инициализацию для активации расчётов
+    connect(trade, &Trade::bayCoin, this, &MainWindow::bayCoin);
+    connect(trade, &Trade::sellCoin, this, &MainWindow::sellCoin);
+    connect(trade, &Trade::bayCoin, openOrdrers, &OpenOrdrers::setNotifi);
+    connect(trade, &Trade::sellCoin, openOrdrers, &OpenOrdrers::setNotifi);
+    connect(openOrdrers, &OpenOrdrers::sendNotifi, trade, &Trade::getNotifi);
+    connect(trade, &Trade::sendStatistics, this, &MainWindow::printTradeStatistics);
+
+    ui->comboBoxLevelName->addItem(trade->getNameLevel());
+    trades.append(trade);
+}
+
+void MainWindow::getOpenOrders()
+{
+    QJsonObject obj;
+    obj["POST"]=QString("GetOpenOrders");
+    sendJson(obj);
+}
+
+void MainWindow::updateTrades()                                                     // ВЫЗОВ trade.check();
+{
+    int countTrades = trades.size();
+    if(countTrades == 0)
+        return;
+    QVector<int> vec = openOrdrers->getOpenOrders();
+    for(int i = 0; i < countTrades; i++)
+    {
+        trades[i]->check(vec);
+    }
+}
+
+void MainWindow::printTradeStatistics(QString statistics)
+{
+    ui->labelTradeStatistics->setText(statistics);
+}
 
 void MainWindow::on_saveConfig_clicked()
 {
@@ -370,7 +442,7 @@ void MainWindow::getResponse(QJsonObject json)                                  
     if(json.contains("Data") && json["Data"].isArray())     // *************** Если вложен МАССИВ *****************
     {
         QJsonArray jarray = json["Data"].toArray();
-        qDebug() << "Array objects: " << jarray.count();
+//        qDebug() << "Array objects: " << jarray.count();
         if(jarray.empty())
             return;
         StateResponse state;
@@ -530,12 +602,15 @@ void MainWindow::getResponse(QJsonObject json)                                  
             }
         } else {
 //                QJsonObject jdata = json["Data"].toObject();
-            qDebug() << "One object: " << jdata["Label"].toString();
+//            qDebug() << "One object: " << jdata["Label"].toString();
+            curCoin.Id = jdata["TradePairId"].toInt();
+            curCoin.lastPrice = jdata["LastPrice"].toDouble();
+            curCoin.volume = jdata["Volume"].toDouble();
             QString str = jdata["Label"].toString();
             str.append("\nlastPrice");
-            str.append(QString::number(jdata["LastPrice"].toDouble(),'f',8));
+            str.append(QString::number(curCoin.lastPrice,'f',8));
             str.append("\nVolume");
-            str.append(QString::number(jdata["Volume"].toDouble(),'f',8));
+            str.append(QString::number(curCoin.volume,'f',8));
 
             ui->label_23->setStyleSheet("background-color: #828282; font-size: 15px; font-weight: bold; color: #000000");
             ui->label_23->setAlignment(Qt::AlignCenter);
@@ -558,7 +633,7 @@ void MainWindow::postResponse(QJsonObject json)
                 ui->lbStat->setStyleSheet("background-color: #5EED00; font-size: 15px; font-weight: bold; color: #000000");
                 ui->lbStat->setAlignment(Qt::AlignCenter);
             } else {
-                qDebug() << "json response get not Success";
+                qDebug() << "json response post not Success";
             }
         }
         if(json.contains("Message") )
@@ -577,6 +652,7 @@ void MainWindow::postResponse(QJsonObject json)
         }
         if(json.contains("Error") && !json["Error"].isNull()){
             QString str = json["Error"].toString();
+            qDebug() << str;
             ui->lbInsidMsg->setText(str);
             ui->lbInsidMsg->setStyleSheet("background-color: #FF0000; font-size: 15px; font-weight: bold; color: #000000");
             ui->lbInsidMsg->setAlignment(Qt::AlignCenter);
@@ -584,7 +660,7 @@ void MainWindow::postResponse(QJsonObject json)
         if(json.contains("Data") && json["Data"].isArray())     // *************** Если вложен МАССИВ *****************
         {
             QJsonArray jarray = json["Data"].toArray();
-            qDebug() << "Array objects: " << jarray.count();
+//            qDebug() << "Array objects: " << jarray.count();
             if(jarray.empty())
                 return;
             StateResponse state;
@@ -654,24 +730,51 @@ void MainWindow::postResponse(QJsonObject json)
                     }
                     break;
                 }
-                case OrderId:
+                case OrderId:                                                   // Открытые ордера
                 {
                     openOrdrers->setNewOpenOrders(jarray);
+                    updateTrades();
                     break;
                 }
                 default:
                 {
-                    QString error = "Не подходящего состояния для парсинга ответа POST с сервера ";
-                    ui->lbInsidMsg->setText(error);
-                    qDebug() << error;
+                    if(jarray[0].toInt() == deleteorder)                        // Если значение равно deleteorder (номер ордера для удаления)
+                    {
+                        qDebug() << QString::number(deleteorder) <<  "removed"; // Проинформируем что удалён
+                        on_pushButton_18_clicked();
+                    }
+                    else
+                    {
+                        QString error;
+                        error = "Не подходящего состояния для парсинга ответа POST масива с сервера ";
+                        ui->lbInsidMsg->setText(error);
+                    }
                     return;
                 }
             }
         }
         if(json.contains("Data") && json["Data"].isObject())    // *************** Если вложен ОДИН объект *****************
         {
+//            qDebug() << "one object";
             QJsonObject jdata = json["Data"].toObject();
-            qDebug() << "Ответ с сервера на POST запрос >> вложен ОДИН объект";
+            if(jdata.contains("FilledOrders"))             // Если ордер создан успешно
+            {
+                if(jdata["FilledOrders"].isArray())
+                {
+//                    qDebug() << "isArray";
+                    QJsonArray jarray2 = jdata["FilledOrders"].toArray();
+                    for(int i = 0; i<jarray2.size(); i++)
+                        qDebug() << "FilledOrders " << i << "=" << jarray2[i].toInt();
+                }
+                if(jdata.contains("OrderId")){
+                    int idOrder = jdata["OrderId"].toInt();
+                    qDebug() << "OrderId" << idOrder;
+                }
+            }
+             else
+            {
+                qDebug() << "Ответ с сервера на POST запрос >> вложен ОДИН объект";
+            }
         }
         //    qDebug() << "Время парсинга " << time.nsecsElapsed();
 }
@@ -760,8 +863,11 @@ void MainWindow::on_HrzTblHdr_clicked()
     this->update();
 }
 
-void MainWindow::setPrice(double price, double amount)
+void MainWindow::setPrice(double price, double amount, int id)
 {
+    ui->spinLevelPrice->setValue(price);
+    ui->spinLevelId->setValue(id);
+
     ui->bayAmount->setValue(amount);
     ui->bayPrice->setValue(price);
     ui->baySum->setValue(amount*price);
@@ -1016,10 +1122,10 @@ void MainWindow::on_chkbksFindProfit_clicked()
     modelPairs->checkFilter();
 }
 
-
-void MainWindow::on_pushButton_14_clicked()
+void MainWindow::on_pushButton_14_clicked()                 // Тестовая кнопка
 {
-    sellOrderModel->applyChange();
+
+//    trade->getApproximate();
 }
 
 void MainWindow::on_bayTotal_valueChanged(double arg1)
@@ -1088,4 +1194,115 @@ void MainWindow::on_pushButton_18_clicked()
     QJsonObject obj;
     obj["POST"]=QString("GetOpenOrders");
     sendJson(obj);
+}
+
+void MainWindow::on_pushButton_9_clicked()                          // Слот кнопки BAY
+{
+    QJsonObject obj;
+    obj["POST"]=QString("SubmitTrade");
+    obj["TradePairId"]=marketOption.Id;
+    obj["Type"]=QString("Bay");
+    obj["Rate"]=ui->bayPrice->value();
+    obj["Amount"]=ui->bayAmount->value();
+    emit sendJson(obj);
+}
+
+void MainWindow::on_pushButton_10_clicked()                         // Слот кнопки SELL
+{
+    QJsonObject obj;
+    obj["POST"]=QString("SubmitTrade");
+    obj["TradePairId"]=marketOption.Id;
+    obj["Type"]=QString("Sell");
+    obj["Rate"]=ui->sellPrice->value();
+    obj["Amount"]=ui->sellAmount->value();
+    emit sendJson(obj);
+}
+
+void MainWindow::on_spinProfit_valueChanged(int arg1)
+{
+    if(qFuzzyIsNull(ui->spinLevelPrice->value()))
+        return;
+    double priceUp, priceDown, fee, sum, priceLevel, discretInProcent;
+    priceLevel = ui->spinLevelPrice->value();
+    discretInProcent = (priceLevel/100.)/2. * arg1;
+//    qDebug() << discretInProcent;
+    sum = discretInProcent + priceLevel;
+//    qDebug() << "sum up=" << sum;
+    fee = sum/500.;
+//    qDebug() << "fee up =" << fee;
+    priceUp = sum + fee;
+    ui->spinLevelUpPrice->setValue(priceUp);
+    //***
+    sum = priceLevel - discretInProcent;
+//    qDebug() << "sum down=" << sum;
+    fee = sum/500.;
+//    qDebug() << "fee down =" << fee;
+    priceDown = sum - fee;
+    ui->spinLevelDownPrice->setValue(priceDown);
+}
+
+void MainWindow::on_pushButton_19_clicked()
+{
+    on_spinProfit_valueChanged(ui->spinProfit->value());
+}
+
+void MainWindow::on_pushButton_20_clicked()
+{
+//    trade->setData(ui->spinLevelUpPrice->value(), ui->spinLevelDownPrice->value(), ui->labelId->text().toInt());
+    createTrade();
+}
+
+void MainWindow::on_spinBox_valueChanged(int arg1)
+{
+//    trade->setTimeWait(arg1);
+}
+
+
+void MainWindow::on_spinLevelPrice_valueChanged(double arg1)
+{
+    if(qFuzzyIsNull(ui->spinLevelPrice->value()))
+        return;
+    double priceUp, priceDown, fee, sum, priceLevel, discretInProcent;
+    priceLevel = ui->spinLevelPrice->value();
+    double procent = ui->spinProfit->value();
+    discretInProcent = (priceLevel/100.)/2. * procent;
+//    qDebug() << discretInProcent;
+    sum = discretInProcent + priceLevel;
+//    qDebug() << "sum up=" << sum;
+    fee = sum/500.;
+//    qDebug() << "fee up =" << fee;
+    priceUp = sum + fee;
+    ui->spinLevelUpPrice->setValue(priceUp);
+    //***
+    sum = priceLevel - discretInProcent;
+//    qDebug() << "sum down=" << sum;
+    fee = sum/500.;
+//    qDebug() << "fee down =" << fee;
+    priceDown = sum - fee;
+    ui->spinLevelDownPrice->setValue(priceDown);
+}
+
+void MainWindow::on_spinMaxTrade_valueChanged(double arg1)
+{
+
+}
+
+void MainWindow::on_comboBoxLevelName_activated(int index)
+{
+    qDebug() << "index=" << index << "trades.size=" << trades.size();
+    ui->spinLevelPrice->setValue(trades[index]->getPriceLevel());
+    ui->spinLevelDownPrice->setValue(trades[index]->getPriceDown());
+    ui->spinLevelUpPrice->setValue(trades[index]->getPriceUp());
+    ui->spinLevelId->setValue(trades[index]->getIdTrade());
+    ui->spinMaxTrade->setValue(trades[index]->getMaxTrade());
+    ui->spinProfit->setValue(trades[index]->getProcent());
+    ui->spinTimeWaitLevel->setValue(trades[index]->getTimeWait());
+    ui->leNameLevel->setText(trades[index]->getNameLevel());
+}
+
+void MainWindow::on_pushButton_22_clicked()
+{
+    int i = ui->comboBoxLevelName->currentIndex();
+    trades.removeAt(i);
+    ui->comboBoxLevelName->removeItem(i);
 }

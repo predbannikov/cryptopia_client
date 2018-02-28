@@ -198,7 +198,7 @@ void ModelPairs::selectedRow(QModelIndex index)
 
         emit dataChanged( index, index );   // Изменяем вид текущего индекса
     } else {
-        currentCurrency = currencies.at(index.row());
+//        currentCurrency = currencies.at(index.row());
         emit getMarket(this->currencies.at(index.row()).Id);
     }
 }

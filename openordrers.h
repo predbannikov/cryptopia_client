@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QDebug>
 #include <QDateTime>
+#include <QIcon>
 
 class OpenOrdrers : public QAbstractTableModel
 {
@@ -13,8 +14,8 @@ class OpenOrdrers : public QAbstractTableModel
 
 public:
     explicit OpenOrdrers(QObject *parent = nullptr);
-    const int COLUMN = 9;
-    enum KeyColumn {OrderId = 0, TradePairId, Market, Type, Rate, Amount, Total, Remaining, TimeStamp};
+    const int COLUMN = 8;
+    enum KeyColumn {OrderId = 0, TradePairId, Market, Type, Rate, Amount, Total, TimeStamp};
     enum TypeOrder {sell = 0, bay = 1};
     // Header:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -36,6 +37,12 @@ public:
     void setNewOpenOrders(QJsonArray array);
     void parsing(QJsonArray array);
     void applyChanges();
+    void setNotifi(double price, double amount, int id);
+    QVector <int> getOpenOrders();
+    void handler();
+    QList<double> getOpenOrdersId(int price);
+
+
     struct MyOrder {
         int orderId;
         int TradePairId;
@@ -48,9 +55,12 @@ public:
         QString timestamp;
     };
     QList<MyOrder> myOrders;
+    QMap<qint64, MyOrder> stackNotifi;
+
 //    void selectRow();
+signals:
+    void sendNotifi(double price, double amount, int pairId, int ordId);
 private:
-//    KeyColumn keyColumn;
 };
 
 #endif // OPENORDRERS_H

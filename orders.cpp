@@ -50,33 +50,24 @@ QVariant ModelOrders::data(const QModelIndex &index, int role) const
 //            return QColor();
         case Qt::BackgroundRole:
 //            qDebug() << "row = " << index.row() << " column = " << index.column();
-            if(selOrder.indexStart.isValid() )   // рисуем выделение
+            if(saveIndex.isValid() )   // рисуем выделение
             {
-                qDebug() << "sell.start.row = " << selOrder.indexStart.row() << " sell.stop.row = " << selOrder.indexStop.row();
-                    if(selOrder.indexStart.row() == index.row())
+//                qDebug() << "sell.start.row = " << selOrder.indexStart.row() << " sell.stop.row = " << selOrder.indexStop.row();
+                    if(saveIndex.row() == index.row())
                         return QColor(0, 0, 255, 100);
-                    else{
-                        return QColor(100, 100, 100);
-                    }
             }
             if(type == bay)
             {
-                if(selOrder.selectPrice < rec.price && selOrder.startProfit > rec.price && selOrder.type == bay){
-                    return QColor(127, 127, 127);
-                } else if(selOrder.selectPrice > rec.price && selOrder.startProfit < rec.price && selOrder.type == sell){
-                    return QColor(127, 127, 127);
-                }
                 return QColor(0, 255, 0, rec.intensColor);
             }
             else if(type == sell)
             {
-                if(selOrder.selectPrice < rec.price && selOrder.startProfit > rec.price && selOrder.type == bay){
-                    return QColor(127, 127, 127);
-                } else if(selOrder.selectPrice > rec.price && selOrder.startProfit < rec.price && selOrder.type == sell){
-                    return QColor(127, 127, 127);
-                }
                 return QColor(255, 0, 0, rec.intensColor);
             }
+        case Qt::DecorationRole:{
+//            this->parent->myOrder.size();
+//            return QIcon("galka.png");
+        }
     default:
             return QVariant();
     }
@@ -157,6 +148,10 @@ void ModelOrders::appendOrders(QJsonArray array)
         {
             curr.price = jobj["Price"].toDouble();
         }
+        if(jobj.contains("TradePairId") && jobj["TradePairId"].isDouble())
+        {
+            curr.Id = jobj["TradePairId"].toInt();
+        }
         sourceOrd.append(curr);
     }
     checkFilter();
@@ -180,6 +175,7 @@ void ModelOrders::checkFilter()
     else {
         Order temp;
         temp.price = 0;         // Последний прайс, с которым делаем сверку фильтрации
+        temp.Id = sourceOrd[0].Id;
         for(int i=sourceOrd.size()-1; i>=0 ; --i)
         {
             if (qFuzzyIsNull(temp.price))                        // Получаем не нулевой прайс
@@ -299,25 +295,24 @@ void ModelOrders::selectedRow(QModelIndex index)
 {
 //    qDebug() << "index row=" << index.row();
     Order ord = orders.at(index.row());
-    emit sendPrice(ord.price, ord.volume);      // Отправляем цену и количество монет на покупку в окно покупок и продаж
-//    if(saveIndex.row() == index.row())
-//    {
-//        emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
-//        saveIndex = createIndex(-1,-1);
-//        selOrder.type = non;
-//    }
-//    else
-//    {
-//        if(!saveIndex.isValid())
-//        {
-//            saveIndex = index;
-//            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
-//        } else {
-//            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
-//            saveIndex = index;
-//            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
-//        }
-//    }
+    emit sendPrice(ord.price, ord.volume, ord.Id);      // Отправляем цену и количество монет на покупку в окно покупок и продаж
+    if(saveIndex.row() == index.row())
+    {
+        emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
+        saveIndex = createIndex(-1,-1);
+    }
+    else
+    {
+        if(!saveIndex.isValid())
+        {
+            saveIndex = index;
+            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
+        } else {
+            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
+            saveIndex = index;
+            emit dataChanged(createIndex(saveIndex.row(),0), createIndex(saveIndex.row(), COLUMN));
+        }
+    }
 //    double price, volume, sum, fee, total;
 //    price = ord.price;
 //    volume = ord.volume;

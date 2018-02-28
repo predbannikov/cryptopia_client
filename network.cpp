@@ -9,7 +9,7 @@ Network::Network(QString s) : name(s)
     // Подключаем networkManager к обработчику ответа
     connect(getNetManager, &QNetworkAccessManager::finished, this, &Network::getResult);
     connect(postNetManager, &QNetworkAccessManager::finished, this, &Network::postResult);
-
+    lastTimeStamp = 0;
 }
 
 Network::~Network()
@@ -56,33 +56,57 @@ void Network::receivJson(QJsonObject json)
     {
         if(json["POST"] == QString("GetBalance"))
         {
-            getBalance("GetBalance");
+            url = URL + "GetBalance";
+            jdoc = QJsonDocument::fromJson("{}", &parseError);
+            arrayreq = QJsonDocument(testobj).toJson(QJsonDocument::Compact);
+            postRequest();
         }
         if(json["POST"] == QString("GetOpenOrders"))
         {
-            getBalance("GetOpenOrders");
+            url = URL + "GetOpenOrders";
+            jdoc = QJsonDocument::fromJson("{}", &parseError);
+            arrayreq = QJsonDocument(testobj).toJson(QJsonDocument::Compact);
+            postRequest();
+//            qDebug() << "GetOpenOrders()";
         }
         if(json["POST"] == QString("CancelTrade"))
         {
-//            QJson
-            getBalance("CancelTrade");
+            url = URL + "CancelTrade";
+            json.remove("POST");
+//            jobj["Type"] = json["Type"].toString();
+//            jobj["OrderId"] = json["OrderId"].toInt();
+            arrayreq = QJsonDocument(json).toJson(QJsonDocument::Compact);
+            postRequest();
+//            testobj = jobj;
+//            teststr = "test";
+//            getBalance("CancelTrade");
+        }
+        if(json["POST"] == QString("SubmitTrade"))
+        {
+            url = URL + "SubmitTrade";
+            json.remove("POST");
+//            qDebug() << "Rate=" << json["Rate"].toDouble();
+//            qDebug() << "Amount=" << json["Amount"].toDouble();
+//            qDebug() << "Type=" << json["Type"].toString();
+//            qDebug() << "Id=" << json["TradePairId"].toInt();
+            qDebug() << "SubmitTrade";
+            arrayreq = QJsonDocument(json).toJson(QJsonDocument::Compact);
+            postRequest();
         }
     } else {
         qDebug() << "got is: else(GET) in: void Network::receivJson(QJsonObject json)";
     }
 }
 
-void Network::getBalance(QString request)
+void Network::postRequest()
 {
-    QString url = URL + request;
-    const QByteArray reqjsonrec = "{}";
-    QJsonParseError parseError;
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(reqjsonrec, &parseError);
     QByteArray requestContentBase64String;
-    QByteArray arrayreq = jsonDoc.toJson(QJsonDocument::Compact);
     requestContentBase64String = QCryptographicHash::hash(arrayreq, QCryptographicHash::Md5);
     QByteArray base64 = requestContentBase64String.toBase64();
-    qint64 unixtimestamp = QDateTime::currentSecsSinceEpoch();
+    qint64 unixtimestamp = QDateTime::currentMSecsSinceEpoch();
+    if(lastTimeStamp == unixtimestamp)  // Если предыдущий запрос был с таким же временем,
+        unixtimestamp++;                // добавим одну миллисекунду
+    lastTimeStamp = unixtimestamp;
     QString nonce = QString::number(unixtimestamp);
     QString signature = API_KEY + "POST" + QString(QUrl::toPercentEncoding(
                 url,"", "/:")).toLower()
@@ -100,7 +124,7 @@ void Network::getBalance(QString request)
     QByteArray hmacsignature = decodapisecret.toBase64();
 
     QString header_value = "amx " + API_KEY + ":" + hmacsignature + ":" + nonce;
-    qDebug() << header_value;
+//    qDebug() << header_value;
 
     QNetworkRequest reqest(QUrl(url.toLower()));
 //    reqest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json;charset=UTF-8");
@@ -108,8 +132,7 @@ void Network::getBalance(QString request)
     reqest.setRawHeader(QByteArray("Authorization"), header_value.toUtf8());
 
     postNetManager->post(reqest,arrayreq );
-    qDebug() << header_value;
-    qDebug() << nonce;
+//    qDebug() << "post reqest" << nonce;
 }
 
 void Network::receivKey(QByteArray bytearray)
@@ -147,7 +170,11 @@ void Network::getResult(QNetworkReply *reply)
 
 void Network::postResult(QNetworkReply *reply)
 {
-    qDebug() << "get POST result";
+//    qint64 unixtimestamp = QDateTime::currentSecsSinceEpoch();
+
+//    QString nonce = QString::number(unixtimestamp);
+
+//    qDebug() << "get POST result" << nonce;
     if ((!reply->error())){
         QJsonParseError parsError;
         QJsonDocument document = QJsonDocument::fromJson(reply->readAll(), &parsError);

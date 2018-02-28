@@ -19,7 +19,8 @@ public:
     struct Currency {
         int Id;
         QString label;
-        long double lastPrice;
+        double lastPrice;
+        double volume;
 //        bool filter;
     };
 

@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     orders.cpp \
     pairs.cpp \
     graphics.cpp \
-    openordrers.cpp
+    openordrers.cpp \
+    trade.cpp
 
 HEADERS  += mainwindow.h \
     network.h \
@@ -41,6 +42,7 @@ HEADERS  += mainwindow.h \
     orders.h \
     pairs.h \
     graphics.h \
-    openordrers.h
+    openordrers.h \
+    trade.h
 
 FORMS    += mainwindow.ui

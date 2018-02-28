@@ -89,6 +89,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="pushIcon">
+          <property name="text">
+           <string>ico</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="pushButton_14">
           <property name="text">
            <string>test</string>
@@ -286,14 +293,20 @@
         </item>
         <item row="4" column="0">
          <widget class="QStackedWidget" name="stackedWidget_2">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="maximumSize">
            <size>
             <width>16777215</width>
-            <height>400</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="stackedWidget_2Page1">
            <layout class="QGridLayout" name="gridLayout_2">
@@ -462,397 +475,421 @@
            </layout>
           </widget>
           <widget class="QWidget" name="stackedWidget_2Page2">
-           <layout class="QGridLayout" name="gridLayout_5">
-            <item row="0" column="1">
-             <widget class="QGroupBox" name="groupBox_4">
-              <property name="title">
-               <string>Sell coin</string>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_4">
-               <property name="leftMargin">
-                <number>3</number>
-               </property>
-               <property name="topMargin">
-                <number>3</number>
-               </property>
-               <property name="rightMargin">
-                <number>3</number>
-               </property>
-               <property name="bottomMargin">
-                <number>3</number>
-               </property>
-               <property name="spacing">
-                <number>3</number>
-               </property>
-               <item row="5" column="1">
-                <widget class="QDoubleSpinBox" name="sellTotal">
-                 <property name="enabled">
-                  <bool>true</bool>
-                 </property>
-                 <property name="buttonSymbols">
-                  <enum>QAbstractSpinBox::UpDownArrows</enum>
-                 </property>
-                 <property name="decimals">
-                  <number>8</number>
-                 </property>
-                 <property name="minimum">
-                  <double>0.000000000000000</double>
-                 </property>
-                 <property name="maximum">
-                  <double>999999999.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QDoubleSpinBox" name="sellFee">
-                 <property name="enabled">
-                  <bool>false</bool>
-                 </property>
-                 <property name="readOnly">
-                  <bool>false</bool>
-                 </property>
-                 <property name="buttonSymbols">
-                  <enum>QAbstractSpinBox::NoButtons</enum>
-                 </property>
-                 <property name="decimals">
-                  <number>8</number>
-                 </property>
-                 <property name="maximum">
-                  <double>999999999.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_13">
-                 <property name="text">
-                  <string>Price</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QDoubleSpinBox" name="sellAmount">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="decimals">
-                  <number>8</number>
-                 </property>
-                 <property name="maximum">
-                  <double>999999999.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_14">
-                 <property name="text">
-                  <string>Fee</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QDoubleSpinBox" name="sellSum">
-                 <property name="enabled">
-                  <bool>false</bool>
-                 </property>
-                 <property name="buttonSymbols">
-                  <enum>QAbstractSpinBox::NoButtons</enum>
-                 </property>
-                 <property name="decimals">
-                  <number>8</number>
-                 </property>
-                 <property name="maximum">
-                  <double>999999999.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QDoubleSpinBox" name="sellPrice">
-                 <property name="decimals">
-                  <number>8</number>
-                 </property>
-                 <property name="maximum">
-                  <double>999999999.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_15">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>Amount</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="1">
-                <widget class="QPushButton" name="pushButton_10">
-                 <property name="text">
-                  <string>Sell coin</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="label_16">
-                 <property name="text">
-                  <string>Total</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="label_17">
-                 <property name="text">
-                  <string>Sum</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="2">
-                <widget class="QLabel" name="label_18">
-                 <property name="text">
-                  <string>COIN</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="2">
-                <widget class="QLabel" name="label_19">
-                 <property name="text">
-                  <string>COIN</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="2">
-                <widget class="QLabel" name="label_20">
-                 <property name="text">
-                  <string>COIN</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="2">
-                <widget class="QLabel" name="label_21">
-                 <property name="text">
-                  <string>COIN</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="2">
-                <widget class="QLabel" name="label_22">
-                 <property name="text">
-                  <string>COIN</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0" colspan="3">
-                <widget class="Line" name="line_2">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
+           <layout class="QGridLayout" name="gridLayout_8">
             <item row="0" column="0">
-             <widget class="QGroupBox" name="groupBox_3">
-              <property name="title">
-               <string>Bye coin</string>
+             <layout class="QVBoxLayout" name="verticalLayout_9">
+              <property name="spacing">
+               <number>3</number>
               </property>
-              <layout class="QGridLayout" name="gridLayout_3">
-               <property name="leftMargin">
-                <number>3</number>
-               </property>
-               <property name="topMargin">
-                <number>3</number>
-               </property>
-               <property name="rightMargin">
-                <number>3</number>
-               </property>
-               <property name="bottomMargin">
-                <number>3</number>
-               </property>
-               <property name="spacing">
-                <number>3</number>
-               </property>
-               <item row="5" column="1">
-                <widget class="QDoubleSpinBox" name="bayTotal">
-                 <property name="enabled">
-                  <bool>true</bool>
-                 </property>
-                 <property name="buttonSymbols">
-                  <enum>QAbstractSpinBox::UpDownArrows</enum>
-                 </property>
-                 <property name="decimals">
-                  <number>8</number>
-                 </property>
-                 <property name="maximum">
-                  <double>999999999.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QDoubleSpinBox" name="bayFee">
-                 <property name="enabled">
-                  <bool>false</bool>
-                 </property>
-                 <property name="buttonSymbols">
-                  <enum>QAbstractSpinBox::NoButtons</enum>
-                 </property>
-                 <property name="decimals">
-                  <number>8</number>
-                 </property>
-                 <property name="maximum">
-                  <double>999999999.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_4">
-                 <property name="text">
-                  <string>Price</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QDoubleSpinBox" name="bayAmount">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="decimals">
-                  <number>8</number>
-                 </property>
-                 <property name="maximum">
-                  <double>999999999.000000000000000</double>
-                 </property>
-                 <property name="singleStep">
-                  <double>0.000010000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_6">
-                 <property name="text">
-                  <string>Fee</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QDoubleSpinBox" name="baySum">
-                 <property name="enabled">
-                  <bool>false</bool>
-                 </property>
-                 <property name="buttonSymbols">
-                  <enum>QAbstractSpinBox::NoButtons</enum>
-                 </property>
-                 <property name="decimals">
-                  <number>8</number>
-                 </property>
-                 <property name="maximum">
-                  <double>999999999.000000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QDoubleSpinBox" name="bayPrice">
-                 <property name="decimals">
-                  <number>8</number>
-                 </property>
-                 <property name="maximum">
-                  <double>999999999.000000000000000</double>
-                 </property>
-                 <property name="singleStep">
-                  <double>0.000001000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_3">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>Amount</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="1">
-                <widget class="QPushButton" name="pushButton_9">
-                 <property name="text">
-                  <string>Bye coin</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="label_7">
-                 <property name="text">
-                  <string>Total</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="label_5">
-                 <property name="text">
-                  <string>Sum</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="2">
-                <widget class="QLabel" name="label_8">
-                 <property name="text">
-                  <string>COIN</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="2">
-                <widget class="QLabel" name="label_9">
-                 <property name="text">
-                  <string>COIN</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="2">
-                <widget class="QLabel" name="label_10">
-                 <property name="text">
-                  <string>COIN</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="2">
-                <widget class="QLabel" name="label_11">
-                 <property name="text">
-                  <string>COIN</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="2">
-                <widget class="QLabel" name="label_12">
-                 <property name="text">
-                  <string>COIN</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0" colspan="3">
-                <widget class="Line" name="line">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="1" column="0" colspan="2">
-             <widget class="QListView" name="listHystory"/>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_9">
+                <item>
+                 <widget class="QGroupBox" name="groupBox_3">
+                  <property name="title">
+                   <string>Bye coin</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_3">
+                   <property name="leftMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="spacing">
+                    <number>3</number>
+                   </property>
+                   <item row="5" column="1">
+                    <widget class="QDoubleSpinBox" name="bayTotal">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="buttonSymbols">
+                      <enum>QAbstractSpinBox::UpDownArrows</enum>
+                     </property>
+                     <property name="decimals">
+                      <number>8</number>
+                     </property>
+                     <property name="maximum">
+                      <double>999999999.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QDoubleSpinBox" name="bayFee">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="buttonSymbols">
+                      <enum>QAbstractSpinBox::NoButtons</enum>
+                     </property>
+                     <property name="decimals">
+                      <number>8</number>
+                     </property>
+                     <property name="maximum">
+                      <double>999999999.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_4">
+                     <property name="text">
+                      <string>Price</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QDoubleSpinBox" name="bayAmount">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="decimals">
+                      <number>8</number>
+                     </property>
+                     <property name="maximum">
+                      <double>999999999.000000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.000010000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_6">
+                     <property name="text">
+                      <string>Fee</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QDoubleSpinBox" name="baySum">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="buttonSymbols">
+                      <enum>QAbstractSpinBox::NoButtons</enum>
+                     </property>
+                     <property name="decimals">
+                      <number>8</number>
+                     </property>
+                     <property name="maximum">
+                      <double>999999999.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QDoubleSpinBox" name="bayPrice">
+                     <property name="decimals">
+                      <number>8</number>
+                     </property>
+                     <property name="maximum">
+                      <double>999999999.000000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.000001000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_3">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="text">
+                      <string>Amount</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="1">
+                    <widget class="QPushButton" name="pushButton_9">
+                     <property name="text">
+                      <string>Bye coin</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="0">
+                    <widget class="QLabel" name="label_7">
+                     <property name="text">
+                      <string>Total</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_5">
+                     <property name="text">
+                      <string>Sum</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QLabel" name="label_8">
+                     <property name="text">
+                      <string>COIN</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QLabel" name="label_9">
+                     <property name="text">
+                      <string>COIN</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QLabel" name="label_10">
+                     <property name="text">
+                      <string>COIN</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="2">
+                    <widget class="QLabel" name="label_11">
+                     <property name="text">
+                      <string>COIN</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="2">
+                    <widget class="QLabel" name="label_12">
+                     <property name="text">
+                      <string>COIN</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="0" colspan="3">
+                    <widget class="Line" name="line">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="groupBox_4">
+                  <property name="title">
+                   <string>Sell coin</string>
+                  </property>
+                  <layout class="QGridLayout" name="gridLayout_4">
+                   <property name="leftMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>3</number>
+                   </property>
+                   <property name="spacing">
+                    <number>3</number>
+                   </property>
+                   <item row="5" column="1">
+                    <widget class="QDoubleSpinBox" name="sellTotal">
+                     <property name="enabled">
+                      <bool>true</bool>
+                     </property>
+                     <property name="buttonSymbols">
+                      <enum>QAbstractSpinBox::UpDownArrows</enum>
+                     </property>
+                     <property name="decimals">
+                      <number>8</number>
+                     </property>
+                     <property name="minimum">
+                      <double>0.000000000000000</double>
+                     </property>
+                     <property name="maximum">
+                      <double>999999999.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QDoubleSpinBox" name="sellFee">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="readOnly">
+                      <bool>false</bool>
+                     </property>
+                     <property name="buttonSymbols">
+                      <enum>QAbstractSpinBox::NoButtons</enum>
+                     </property>
+                     <property name="decimals">
+                      <number>8</number>
+                     </property>
+                     <property name="maximum">
+                      <double>999999999.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_13">
+                     <property name="text">
+                      <string>Price</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QDoubleSpinBox" name="sellAmount">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="decimals">
+                      <number>8</number>
+                     </property>
+                     <property name="maximum">
+                      <double>999999999.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_14">
+                     <property name="text">
+                      <string>Fee</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QDoubleSpinBox" name="sellSum">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="buttonSymbols">
+                      <enum>QAbstractSpinBox::NoButtons</enum>
+                     </property>
+                     <property name="decimals">
+                      <number>8</number>
+                     </property>
+                     <property name="maximum">
+                      <double>999999999.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QDoubleSpinBox" name="sellPrice">
+                     <property name="decimals">
+                      <number>8</number>
+                     </property>
+                     <property name="maximum">
+                      <double>999999999.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_15">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="text">
+                      <string>Amount</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="1">
+                    <widget class="QPushButton" name="pushButton_10">
+                     <property name="text">
+                      <string>Sell coin</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="0">
+                    <widget class="QLabel" name="label_16">
+                     <property name="text">
+                      <string>Total</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_17">
+                     <property name="text">
+                      <string>Sum</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QLabel" name="label_18">
+                     <property name="text">
+                      <string>COIN</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QLabel" name="label_19">
+                     <property name="text">
+                      <string>COIN</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QLabel" name="label_20">
+                     <property name="text">
+                      <string>COIN</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="2">
+                    <widget class="QLabel" name="label_21">
+                     <property name="text">
+                      <string>COIN</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="2">
+                    <widget class="QLabel" name="label_22">
+                     <property name="text">
+                      <string>COIN</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="0" colspan="3">
+                    <widget class="Line" name="line_2">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QListView" name="listHystory">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>150</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
@@ -1047,7 +1084,7 @@ color: #5EED00;
         <item row="3" column="0">
          <widget class="QStackedWidget" name="stackedWidget">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -1059,61 +1096,341 @@ color: #5EED00;
            <property name="enabled">
             <bool>true</bool>
            </property>
-           <layout class="QGridLayout" name="gridLayout_7">
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_23">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>about the coin</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QDateTimeEdit" name="dateTimeEdit_2">
-              <property name="dateTime">
-               <datetime>
-                <hour>18</hour>
-                <minute>0</minute>
-                <second>0</second>
-                <year>2018</year>
-                <month>2</month>
-                <day>7</day>
-               </datetime>
-              </property>
-             </widget>
-            </item>
+           <layout class="QGridLayout" name="gridLayout_5">
             <item row="0" column="0">
-             <widget class="QDateTimeEdit" name="dateTimeEdit">
-              <property name="dateTime">
-               <datetime>
-                <hour>23</hour>
-                <minute>53</minute>
-                <second>0</second>
-                <year>2018</year>
-                <month>2</month>
-                <day>7</day>
-               </datetime>
-              </property>
-              <property name="date">
-               <date>
-                <year>2018</year>
-                <month>2</month>
-                <day>7</day>
-               </date>
-              </property>
-              <property name="time">
-               <time>
-                <hour>23</hour>
-                <minute>53</minute>
-                <second>0</second>
-               </time>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_10">
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_12">
+                <property name="spacing">
+                 <number>2</number>
+                </property>
+                <item>
+                 <widget class="QGroupBox" name="groupBox_6">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="title">
+                   <string>Volume of time</string>
+                  </property>
+                  <widget class="QDateTimeEdit" name="dateTimeEdit_2">
+                   <property name="geometry">
+                    <rect>
+                     <x>6</x>
+                     <y>49</y>
+                     <width>118</width>
+                     <height>23</height>
+                    </rect>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="dateTime">
+                    <datetime>
+                     <hour>18</hour>
+                     <minute>0</minute>
+                     <second>0</second>
+                     <year>2018</year>
+                     <month>2</month>
+                     <day>7</day>
+                    </datetime>
+                   </property>
+                  </widget>
+                  <widget class="QDateTimeEdit" name="dateTimeEdit">
+                   <property name="geometry">
+                    <rect>
+                     <x>6</x>
+                     <y>23</y>
+                     <width>118</width>
+                     <height>23</height>
+                    </rect>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="dateTime">
+                    <datetime>
+                     <hour>23</hour>
+                     <minute>53</minute>
+                     <second>0</second>
+                     <year>2018</year>
+                     <month>2</month>
+                     <day>7</day>
+                    </datetime>
+                   </property>
+                   <property name="date">
+                    <date>
+                     <year>2018</year>
+                     <month>2</month>
+                     <day>7</day>
+                    </date>
+                   </property>
+                   <property name="time">
+                    <time>
+                     <hour>23</hour>
+                     <minute>53</minute>
+                     <second>0</second>
+                    </time>
+                   </property>
+                  </widget>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="labelTradeStatistics">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>statistics trade</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_23">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>about the coin</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="groupBox_7">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="title">
+                 <string>calc level</string>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_7">
+                 <property name="leftMargin">
+                  <number>3</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>3</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>3</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>3</number>
+                 </property>
+                 <property name="spacing">
+                  <number>3</number>
+                 </property>
+                 <item row="0" column="0">
+                  <layout class="QVBoxLayout" name="verticalLayout_10">
+                   <item>
+                    <widget class="QComboBox" name="comboBoxLevelName"/>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="pushButton_20">
+                     <property name="text">
+                      <string>create +</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="pushButton_21">
+                     <property name="text">
+                      <string>save</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="pushButton_22">
+                     <property name="text">
+                      <string>remove -</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item row="0" column="1">
+                  <layout class="QFormLayout" name="formLayout">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_25">
+                     <property name="text">
+                      <string>level</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QDoubleSpinBox" name="spinLevelPrice">
+                     <property name="decimals">
+                      <number>8</number>
+                     </property>
+                     <property name="maximum">
+                      <double>99999.990000000005239</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_27">
+                     <property name="text">
+                      <string>price up</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QDoubleSpinBox" name="spinLevelUpPrice">
+                     <property name="decimals">
+                      <number>8</number>
+                     </property>
+                     <property name="maximum">
+                      <double>99999.990000000005239</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_26">
+                     <property name="text">
+                      <string>price down</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QDoubleSpinBox" name="spinLevelDownPrice">
+                     <property name="decimals">
+                      <number>8</number>
+                     </property>
+                     <property name="maximum">
+                      <double>99999.990000000005239</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QLineEdit" name="leNameLevel">
+                     <property name="text">
+                      <string>check name</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_31">
+                     <property name="text">
+                      <string>name</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item row="1" column="0" colspan="2">
+                  <layout class="QHBoxLayout" name="horizontalLayout_8">
+                   <item>
+                    <layout class="QFormLayout" name="formLayout_3">
+                     <property name="horizontalSpacing">
+                      <number>3</number>
+                     </property>
+                     <property name="verticalSpacing">
+                      <number>3</number>
+                     </property>
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_28">
+                       <property name="text">
+                        <string>level Id =</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <widget class="QSpinBox" name="spinLevelId">
+                       <property name="maximum">
+                        <number>999999</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="label_24">
+                       <property name="text">
+                        <string>fix~profit %</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1">
+                      <widget class="QSpinBox" name="spinProfit">
+                       <property name="minimum">
+                        <number>1</number>
+                       </property>
+                       <property name="value">
+                        <number>2</number>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <layout class="QFormLayout" name="formLayout_2">
+                     <property name="horizontalSpacing">
+                      <number>3</number>
+                     </property>
+                     <property name="verticalSpacing">
+                      <number>3</number>
+                     </property>
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_29">
+                       <property name="text">
+                        <string>set time wait</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <widget class="QSpinBox" name="spinTimeWaitLevel">
+                       <property name="maximum">
+                        <number>9999999</number>
+                       </property>
+                       <property name="value">
+                        <number>5</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="label_30">
+                       <property name="text">
+                        <string>set max trade</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1">
+                      <widget class="QDoubleSpinBox" name="spinMaxTrade">
+                       <property name="decimals">
+                        <number>8</number>
+                       </property>
+                       <property name="maximum">
+                        <double>99999.999999000006937</double>
+                       </property>
+                       <property name="value">
+                        <double>1.100000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
@@ -1267,7 +1584,7 @@ color: #5EED00;
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>true</bool>
+    <bool>false</bool>
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>

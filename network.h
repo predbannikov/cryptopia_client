@@ -27,14 +27,21 @@ private:
     QNetworkAccessManager *getNetManager;
     QNetworkAccessManager *postNetManager;
     const QString URL = "https://www.cryptopia.co.nz/api/";
-    QString teststr;
+    QString url;
+    QJsonObject testobj;
+    QByteArray arrayreq;
+    QJsonDocument jdoc;
+    QJsonParseError parseError;
+    qint64 lastTimeStamp;
+
+    void postRequest();
 signals:
     void send(int);
     void sendMessage(QJsonObject);
     void sendMessagePOST(QJsonObject);
     void sendCountRequest();
 private slots:
-    void getBalance(QString request);
+//    void getBalance(QString request);
 
     void getResult(QNetworkReply *reply);
     void postResult(QNetworkReply *reply);

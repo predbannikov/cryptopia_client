@@ -9,6 +9,7 @@
 #include <QJsonObject>
 #include <QMap>
 #include <QColor>
+#include <QIcon>
 
 //*********************    ModelOrders    ************************
 class ModelOrders: public QAbstractTableModel
@@ -69,7 +70,7 @@ public slots:
 
     void selectedRow(QModelIndex index);
 signals:
-    void sendPrice(double price, double amount);
+    void sendPrice(double price, double amount, int id);
     void clearSelection(Type type);
 };
 

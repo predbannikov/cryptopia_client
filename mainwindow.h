@@ -22,6 +22,7 @@
 #include "pairs.h"
 #include "graphics.h"
 #include "openordrers.h"
+#include "trade.h"
 
 
 
@@ -97,7 +98,7 @@ private:
     QFile   configFile;
     QTimer  *timer;
 
-    enum StateResponse{StateGetMarket = 0, StateGetHystory, StateGetOrders, StateGetMyOrders, StateAvailable, OrderId } stateResponse;
+    enum StateResponse{StateGetMarket = 0, StateGetHystory, StateGetOrders, StateGetMyOrders, StateAvailable, OrderId, FilledOrders } stateResponse;
 
     int countreq = 0;
 
@@ -106,6 +107,7 @@ private:
         int timeoutMarket, tickMarket;
         int timeoutHystory, tickHystory;
         int timeoutOrders, tickOrders;
+        int timeoutOpenOrders, tickOpenOrders;
         int msupdata;
         int msHystory;
         int countH;
@@ -117,8 +119,9 @@ private:
         int step;
     } marketOption;
 
-    ModelPairs::Currency curCoin;
 
+
+    ModelPairs::Currency curCoin;
 
     QString printJsonValueType(QJsonValue type);
 
@@ -134,6 +137,8 @@ private:
 
     QGraphicsScene  *grScene;
     DrawWidget      *drawWidget;
+//    Trade           *trade;
+    QList <Trade*> trades;
 
     enum StateThemes {darkTheme=0, customTheme=1} stateTheme = darkTheme;
     enum StateCalculation {stateCalculation = 0, stateWait = 1} stateCalc = stateWait;
@@ -141,10 +146,12 @@ private:
 
     HystoryDeals hystory;
 
+    int deleteorder;
+
 public slots:
     void getResponse(QJsonObject json);
     void postResponse(QJsonObject json);
-    void setPrice(double price, double amount);
+    void setPrice(double price, double amount, int id);
     bool loadConfig();
     void GetMarket(int id);
     void GetHystory(int id);
@@ -152,14 +159,19 @@ public slots:
     void launchMarket();
     void setMarket(int pairId);
     void countRequest();
-//    void clearSelectOrder(ModelOrders::Type type);
     void customMenuRequested(QPoint pos);
     void romoveOrder();
-
+    void bayCoin(double price, double volume, int id);
+    void sellCoin(double price, double volume, int id);
+    void createTrade();
+    void getOpenOrders();
+    void updateTrades();
+    void printTradeStatistics(QString statistics);
 protected:
 signals:
     void sendKey(QByteArray);
     void sendJson(QJsonObject);
+    void sendIdOrder(int id, int type);
 
 private slots:
 
@@ -222,6 +234,16 @@ private slots:
 
 
     void on_pushButton_18_clicked();
+    void on_pushButton_9_clicked();
+    void on_pushButton_10_clicked();
+    void on_spinProfit_valueChanged(int arg1);
+    void on_pushButton_19_clicked();
+    void on_pushButton_20_clicked();
+    void on_spinBox_valueChanged(int arg1);
+    void on_spinLevelPrice_valueChanged(double arg1);
+    void on_spinMaxTrade_valueChanged(double arg1);
+    void on_comboBoxLevelName_activated(int index);
+    void on_pushButton_22_clicked();
 };
 
 #endif // MAINWINDOW_H
