@@ -14,6 +14,7 @@
 #include <QThread>
 #include <QEventLoop>
 
+
 class Network : public QObject
 {
     Q_OBJECT
@@ -32,7 +33,7 @@ private:
     QByteArray arrayreq;
     QJsonDocument jdoc;
     QJsonParseError parseError;
-    qint64 lastTimeStamp;
+    static qint64 lastTimeStamp;
 
     void postRequest();
 signals:

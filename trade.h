@@ -9,10 +9,11 @@ class Trade : public QObject
 {
     Q_OBJECT
 public:
-    explicit Trade(QObject *parent = nullptr, QString name = "noname");
+    explicit Trade(QObject *parent = nullptr, QString name = "noname", int trend = 0);
 //    Trade(QString name, double lvl, int id, int proc);
 //    Trade(QString name);
     enum StateCreateOrder {StateLaunch = 0, StateCompleted = 1};
+    enum StateTrend {StateTrendFlat = 0, StateTrendUp = 1, StateTrendDown = 2};
 
     struct StackOrder {
         int idOrder;
@@ -24,7 +25,7 @@ public:
         StateCreateOrder state;
     } lastSell, lastBay;
 
-
+    StateTrend stateTrend;
     QVector<double> getHystoryBay();
     QVector<double> getHystorySell();
     double getPriceUp();
@@ -33,7 +34,9 @@ public:
     int getIdTrade();
     int getTimeWait();
     int getProcent();
+    double getMinTrade();
     double getMaxTrade();
+    int getOffset();
     const QString getNameLevel();
     void setData(double up, double down, int id);
     void setLevel(double lvl);
@@ -41,9 +44,12 @@ public:
     void setProcent(int proc);
     void setIdTrade(int id);
     void setTimeWait(int sec);
+    void setMinTrade(double min);
     void setMaxTrade(double max);
+    void setOffset(int diff);
     void initTrade();
     void check(QVector<int> vec);
+    void reset();
 
 private:
     double getApproximate();
@@ -75,10 +81,12 @@ private:
     int countSell = 0;
     int countBay = 0;
     qint64 timeWait = 1;
-    double maxTrade = 1.1;
+    double minTrade = 1.1;
+    double maxTrade = 1.5;
+    int offset = 0;
 
     qint64 timeMark;
-    qint64 curTime;
+//    qint64 curTime;
 
 
 
@@ -87,6 +95,7 @@ signals:
     void bayCoin(double price, double volume, int id);
     void sellCoin(double price, double volume, int id);
     void sendStatistics(QString statistics);
+    void removeIdOrder(int id);
 public slots:
     void setIdOrder(int id, int type);
     void getNotifi(double price, double amount, int pairId, int ordId);

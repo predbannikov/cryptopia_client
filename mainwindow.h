@@ -139,7 +139,8 @@ private:
     DrawWidget      *drawWidget;
 //    Trade           *trade;
     QList <Trade*> trades;
-
+    QList<QString> errorStackPostMSG;
+    QList<QString> messageStackPostMSG;
     enum StateThemes {darkTheme=0, customTheme=1} stateTheme = darkTheme;
     enum StateCalculation {stateCalculation = 0, stateWait = 1} stateCalc = stateWait;
     QHash <StateThemes,QString> themes;
@@ -160,10 +161,12 @@ public slots:
     void setMarket(int pairId);
     void countRequest();
     void customMenuRequested(QPoint pos);
-    void romoveOrder();
+    void removeSelectOrder();
+    void removeById(int id);
     void bayCoin(double price, double volume, int id);
     void sellCoin(double price, double volume, int id);
     void createTrade();
+    void saveTrade(int index);
     void getOpenOrders();
     void updateTrades();
     void printTradeStatistics(QString statistics);
@@ -244,6 +247,7 @@ private slots:
     void on_spinMaxTrade_valueChanged(double arg1);
     void on_comboBoxLevelName_activated(int index);
     void on_pushButton_22_clicked();
+    void on_pushButton_21_clicked();
 };
 
 #endif // MAINWINDOW_H

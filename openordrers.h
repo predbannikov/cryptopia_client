@@ -40,7 +40,10 @@ public:
     void setNotifi(double price, double amount, int id);
     QVector <int> getOpenOrders();
     void handler();
+    void notifyOrders();
     QList<double> getOpenOrdersId(int price);
+
+
 
 
     struct MyOrder {
@@ -60,6 +63,7 @@ public:
 //    void selectRow();
 signals:
     void sendNotifi(double price, double amount, int pairId, int ordId);
+    void sendNotifyOrders(QVector<double> openOrders);
 private:
 };
 

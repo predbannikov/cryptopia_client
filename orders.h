@@ -64,10 +64,11 @@ public:
     QModelIndex saveIndex, saveIndex2;
     typedef QList<Order> Orders;
     Orders orders, sourceOrd;
+    QVector <double> openOrders;
     double filter = 100000000;
 
 public slots:
-
+    void getNotifyOpenOrders(QVector <double> ord);
     void selectedRow(QModelIndex index);
 signals:
     void sendPrice(double price, double amount, int id);

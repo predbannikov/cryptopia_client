@@ -1,20 +1,28 @@
 #include <QtMath>
 #include "trade.h"
 
-Trade::Trade(QObject *parent, QString name) : QObject(parent)
-  //Trade::Trade(QString name = "Name", double lvl = 0, int id = 0, int proc = 0)
+Trade::Trade(QObject *parent, QString name, int trend) : QObject(parent)
 {
     qsrand(QDateTime::currentMSecsSinceEpoch());
     nameLevel = name;
+    switch(trend)
+    {
+    case 0:
+        stateTrend = StateTrendFlat;
+        break;
+    case 1:
+        stateTrend = StateTrendUp;
+        break;
+    case 2:
+        stateTrend = StateTrendDown;
+        break;
+    }
+
     lastBay.state = StateCompleted;
     lastSell.state = StateCompleted;
     lastBay.rate = 0;
     lastSell.rate = 0;
     timeMark = QDateTime::currentSecsSinceEpoch();
-    for(int i=0; i<5; i++){
-        hystoryBay.append((qrand()%100+1)/1000.);
-        hystorySell.append((qrand()%120+1)/1000.);
-    }
 }
 
 QVector<double> Trade::getHystoryBay()
@@ -57,9 +65,19 @@ int Trade::getProcent()
     return procent;
 }
 
+double Trade::getMinTrade()
+{
+    return minTrade;
+}
+
 double Trade::getMaxTrade()
 {
     return maxTrade;
+}
+
+int Trade::getOffset()
+{
+    return offset;
 }
 
 const QString Trade::getNameLevel()
@@ -101,47 +119,76 @@ void Trade::setIdTrade(int id)
 
 void Trade::check(QVector<int> vec)
 {
-    int bay = vec.indexOf(lastBay.idOrder);         // Проверка существования ордера, если ордера уже или и небыло то получаем -1
-    int sell = vec.indexOf(lastSell.idOrder);       // Проверка существования ордера, если ордера уже или и небыло то получаем -1
-
-
-//    if(vec != tradeId)           // Если id не совпадает с айди этого класса значит выходим
-//        return;
-    curTime = QDateTime::currentSecsSinceEpoch();
-
+    qint64 curTime = QDateTime::currentSecsSinceEpoch();
     if((curTime - timeMark) >= timeWait)
     {
+//        qDebug() << "timeWait has passed: " << curTime - timeMark;
         timeMark = curTime;
 
-        if(sell == -1 && lastSell.state == StateCompleted)      // Если ордер отсутствует и мы находимся не в состоянии создания ордера
-        {                                                       // то выполняем блок кода
-            if(!qFuzzyIsNull(lastSell.rate)){
-                hystorySell.append(getSumTradeSell());
-            }
-//            qDebug() << "sell=" << sell;
-            createOrderSell();
-            sendStatTrade();
-//            qDebug()  << "getSumTradeSell()=" << QString::number(getSumTradeSell(), 'f', 8);
-//            qDebug() << "createOrderSell()=" ;
-//            return;
-        }
-        if(bay == -1 && lastBay.state == StateCompleted)     //
+        int openBay = vec.indexOf(lastBay.idOrder);         // Проверка существования ордера, если ордера уже или и небыло то получаем -1
+        int openSell = vec.indexOf(lastSell.idOrder);       // Проверка существования ордера, если ордера уже или и небыло то получаем -1
+        if(stateTrend == StateTrendUp)
         {
-            if(!qFuzzyIsNull(lastBay.rate)){
-                hystoryBay.append(getSumTradeBay());
+            if(openSell == -1 && lastSell.state == StateCompleted)      // Если ордер отсутствует и мы находимся не в состоянии создания ордера
+            {                                                       // то выполняем блок кода
+                if(!qFuzzyIsNull(lastSell.rate)){
+                    hystorySell.append(lastSell.tradeSum);
+                }
+                createOrderSell();
+                sendStatTrade();
             }
-//            qDebug() << "bay=" << bay;
-            createOrderBay();
-            sendStatTrade();
-//              qDebug()  << "getSumTradeBay()=" << QString::number(getSumTradeBay(), 'f', 8);
-//            qDebug() << "createOrderBay()=" ;
+        } else if(stateTrend == StateTrendDown)
+        {
+
+        } else if(stateTrend == StateTrendFlat)
+        {
+            if(openSell == -1 && lastSell.state == StateCompleted)      // Если ордер отсутствует и мы находимся не в состоянии создания ордера
+            {                                                       // то выполняем блок кода
+                if(!qFuzzyIsNull(lastSell.rate)){
+                    hystorySell.append(lastSell.tradeSum);
+                    double nextLvl = priceLevel + (priceLevel/1000. * double(offset));
+                    qDebug() << "Block to sell. Next level = " << QString::number(nextLvl, 'f', 8);
+                    setLevel(nextLvl);
+                    int idOrdForRemove = lastBay.idOrder;
+                    initTrade();
+                    createOrderBay();
+                    emit removeIdOrder(idOrdForRemove);
+                }
+                createOrderSell();
+                sendStatTrade();
+            }
+            if(openBay == -1 && lastBay.state == StateCompleted)     //
+            {
+                if(!qFuzzyIsNull(lastBay.rate)){
+                    hystoryBay.append(lastBay.tradeSum);
+                    double nextLvl = priceLevel - (priceLevel/1000. * double(offset));
+                    qDebug() << "Block to bay. Next level = " << QString::number(nextLvl, 'f', 8);
+                    setLevel(nextLvl);
+                    int idOrdForRemove = lastSell.idOrder;
+                    initTrade();
+                    createOrderSell();
+                    emit removeIdOrder(idOrdForRemove);
+                }
+                createOrderBay();
+                sendStatTrade();
+            }
         }
     }
 }
 
+void Trade::reset()
+{
+    int idOrdForRemove = lastBay.idOrder;
+    lastBay.rate = 0;
+    emit removeIdOrder(idOrdForRemove);
+    idOrdForRemove = lastSell.idOrder;
+    lastSell.rate = 0;
+    emit removeIdOrder(idOrdForRemove);
+}
+
 double Trade::getApproximate()
 {
-    qsrand(QDateTime::currentMSecsSinceEpoch());
+//    qsrand(QDateTime::currentMSecsSinceEpoch());
     int rand = qrand()%1000 + 1;
     double randD = rand/100000000.;
     double round = qFloor(randD*100000000. + 0.5)/100000000.;
@@ -153,9 +200,19 @@ void Trade::setTimeWait(int sec)
     timeWait = sec;
 }
 
+void Trade::setMinTrade(double min)
+{
+    minTrade = min;
+}
+
 void Trade::setMaxTrade(double max)
 {
     maxTrade = max;
+}
+
+void Trade::setOffset(int diff)
+{
+    offset = diff;
 }
 
 void Trade::initTrade()
@@ -165,7 +222,7 @@ void Trade::initTrade()
 
 double Trade::getPriceSell()
 {
-    qsrand(QDateTime::currentMSecsSinceEpoch());
+//    qsrand(QDateTime::currentMSecsSinceEpoch());
     double discret = priceUp/1000000;
     int rand = qrand()%100 + 1;
     countSell++;
@@ -176,7 +233,7 @@ double Trade::getPriceSell()
 
 double Trade::getPriceBay()
 {
-    qsrand(QDateTime::currentMSecsSinceEpoch());
+//    qsrand(QDateTime::currentMSecsSinceEpoch());
     double discret = priceDown/1000000;
     int rand = qrand()%100 + 1;
     countBay++;
@@ -195,6 +252,8 @@ void Trade::createOrderBay()
         lastBay.type = 0;                   // bay = 0;
         qDebug() << "rate=" << QString::number(lastBay.rate,'f', 8) << " amount=" << QString::number(lastBay.amount, 'f', 8) << " pairId=" << lastBay.pairId;
         lastBay.state = StateLaunch;
+        lastBay.tradeSum = lastBay.rate * lastBay.amount;
+        lastBay.tradeSum += lastBay.tradeSum/500;
         emit bayCoin(lastBay.rate, lastBay.amount, lastBay.pairId);
     } else {
         return;
@@ -210,6 +269,8 @@ void Trade::createOrderSell()
         lastSell.amount = calcForTotalSell(lastSell.rate);
         lastSell.type = 1;                   // sell = 1;
         lastSell.state = StateLaunch;
+        lastSell.tradeSum = lastSell.rate * lastSell.amount;
+        lastSell.tradeSum += lastSell.tradeSum/500;
         qDebug() << "rate=" << QString::number(lastSell.rate,'f', 8) << " amount=" << QString::number(lastSell.amount, 'f', 8) << " pairId=" << lastSell.pairId;
             emit sellCoin(lastSell.rate, lastSell.amount, lastSell.pairId);
     } else {
@@ -221,16 +282,14 @@ double Trade::calcForTotalBay(double price)
 {
     if(qFuzzyIsNull(price))
         return 0;
-    if(qFuzzyIsNull(maxTrade))
-        return 0;
-    double fee, sum, total = maxTrade;
-    double approximate = getApproximate();
-//    qDebug() << "approximate=" << QString::number(approximate, 'f', 8);
-    total += approximate;
+    double fee, sum;
+//    qsrand(QDateTime::currentMSecsSinceEpoch());
+    double total = (double)(rand())/RAND_MAX*(maxTrade - minTrade) + minTrade;
     sum = total/(1+1./500.);
     fee = sum/500.;
     double bayAmount = sum/price;
     double roundAmount = qFloor(bayAmount*100000000. + 0.5)/100000000.;
+    qDebug() << "Bay for amount = " << QString::number(fee + sum, 'f', 8);
     return roundAmount;
 }
 
@@ -238,14 +297,14 @@ double Trade::calcForTotalSell(double price)
 {
     if(qFuzzyIsNull(price))
         return 0;
-    if(qFuzzyIsNull(maxTrade))
-        return 0;
-    double fee, sum, total = maxTrade;
-    total += getApproximate();
+    double fee, sum;
+//    qsrand(QDateTime::currentSecsSinceEpoch());
+    double total = (double)(rand())/RAND_MAX*(maxTrade - minTrade) + minTrade;
     sum = total/(1-1./500.);
     fee = sum/500.;
     double sellAmount = sum/price;
     double roundAmount = qFloor(sellAmount*100000000. + 0.5)/100000000.;
+    qDebug() << "Sell for amount = " << QString::number(fee + sum, 'f', 8);
     return roundAmount;
 }
 
@@ -280,23 +339,23 @@ void Trade::calcLevel()
     priceDown = sum - fee;
 }
 
-double Trade::getSumTradeSell()
-{
-    double fee, sum;
-    sum = lastSell.amount * lastSell.rate;
-//    fee = sum/500.;
-    lastSell.tradeSum = sum - fee;
-    return lastSell.tradeSum;
-}
+//double Trade::getSumTradeSell()
+//{
+//    double fee, sum;
+//    sum = lastSell.amount * lastSell.rate;
+////    fee = sum/500.;
+//    lastSell.tradeSum = sum - fee;
+//    return lastSell.tradeSum;
+//}
 
-double Trade::getSumTradeBay()
-{
-    double fee, sum;
-    sum = lastBay.amount * lastBay.rate;
-    fee = sum/500.;
-    lastBay.tradeSum = sum + fee;
-    return lastBay.tradeSum;
-}
+//double Trade::getSumTradeBay()
+//{
+//    double fee, sum;
+//    sum = lastBay.amount * lastBay.rate;
+//    fee = sum/500.;
+//    lastBay.tradeSum = sum + fee;
+//    return lastBay.tradeSum;
+//}
 
 void Trade::sendStatTrade()
 {
@@ -310,12 +369,12 @@ void Trade::sendStatTrade()
     statistic.append("Total sell = ");
     statistic.append(QString::number(sell, 'f', 8));
     statistic.append(" count trade = ");
-    statistic.append(QString::number(i));
+    statistic.append(QString::number(hystorySell.size()));
     statistic.append("\n");
     statistic.append("Total bay = ");
     statistic.append(QString::number(bay, 'f', 8));
     statistic.append(" count trade = ");
-    statistic.append(QString::number(j));
+    statistic.append(QString::number(hystoryBay.size()));
     emit sendStatistics(statistic);
 }
 
@@ -331,15 +390,17 @@ void Trade::setIdOrder(int id, int type)
 }
 
 void Trade::getNotifi(double price, double amount, int pairId, int ordId)
-{
+{    
     if(qFuzzyCompare(lastBay.rate,price))
     {
         if(qFuzzyCompare(lastBay.amount, amount))
         {
             if(lastBay.pairId == pairId)
             {
-                resetStateBay();
+                if(ordId == -1)
+                    lastBay.rate = 0;
                 lastBay.idOrder = ordId;
+                resetStateBay();
             }
         }
     }
@@ -349,8 +410,10 @@ void Trade::getNotifi(double price, double amount, int pairId, int ordId)
         {
             if(lastSell.pairId == pairId)
             {
-                resetStateSell();
+                if(ordId == -1)
+                    lastSell.rate = 0;
                 lastSell.idOrder = ordId;
+                resetStateSell();
             }
         }
     }

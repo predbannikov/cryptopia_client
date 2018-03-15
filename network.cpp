@@ -1,5 +1,7 @@
 #include "network.h"
 
+qint64 Network::lastTimeStamp = 0;
+
 Network::Network(QString s) : name(s)
 {
 
@@ -104,8 +106,12 @@ void Network::postRequest()
     requestContentBase64String = QCryptographicHash::hash(arrayreq, QCryptographicHash::Md5);
     QByteArray base64 = requestContentBase64String.toBase64();
     qint64 unixtimestamp = QDateTime::currentMSecsSinceEpoch();
-    if(lastTimeStamp == unixtimestamp)  // Если предыдущий запрос был с таким же временем,
-        unixtimestamp++;                // добавим одну миллисекунду
+//    int step = unixtimestamp - lastTimeStamp;
+    if(unixtimestamp == lastTimeStamp)  // Если предыдущий запрос был с таким же временем,
+    {
+        QThread::msleep(60);
+        unixtimestamp = QDateTime::currentMSecsSinceEpoch();
+    }
     lastTimeStamp = unixtimestamp;
     QString nonce = QString::number(unixtimestamp);
     QString signature = API_KEY + "POST" + QString(QUrl::toPercentEncoding(
@@ -153,7 +159,7 @@ void Network::receivKey(QByteArray bytearray)
 
 void Network::getResult(QNetworkReply *reply)
 {
-    QNetworkReply::NetworkError  rpl = reply->error();
+//    QNetworkReply::NetworkError  rpl = reply->error();
     if ((!reply->error())){
         QJsonParseError parsError;
         QJsonDocument document = QJsonDocument::fromJson(reply->readAll(), &parsError);
@@ -178,12 +184,12 @@ void Network::postResult(QNetworkReply *reply)
     if ((!reply->error())){
         QJsonParseError parsError;
         QJsonDocument document = QJsonDocument::fromJson(reply->readAll(), &parsError);
-        if (!document.isNull()){
+        if (!document.isNull() && parsError.error == QJsonParseError::NoError){
             // Забираем из документа корневой объект
             QJsonObject root = document.object();
             emit sendMessagePOST(root);
         } else {
-            qDebug() << parsError.errorString();
+            qDebug() << "void Network::postResult() " << parsError.errorString();
         }
 
     } else {

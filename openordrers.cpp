@@ -127,7 +127,8 @@ void OpenOrdrers::setNewOpenOrders(QJsonArray array)
         return;
     clearOpenOrders();
     parsing(array);
-    handler();
+    handler();          // Обработчик для оповещения Trade
+    notifyOrders();
     applyChanges();
 }
 
@@ -170,7 +171,7 @@ void OpenOrdrers::parsing(QJsonArray array)
         {
             myOrder.remaining = jdata["Remaining"].toDouble();
         }
-        if(jdata.contains("TimeStamp"))
+        if(jdata.contains("TimeStamp") && jdata["TimeStamp"].isString())
         {
             myOrder.timestamp = jdata["TimeStamp"].toString();
         }
@@ -220,14 +221,15 @@ void OpenOrdrers::handler()
     MyOrder ord;
     QMap<qint64, MyOrder>::const_iterator it = stackNotifi.constBegin();
     QVector <qint64> stack;
-    qDebug() << "myOrder.size()=" << myOrders.size();
+//    qDebug() << "myOrder.size()=" << myOrders.size();
     qDebug() << "stackNotify.size()=" << stackNotifi.size();
+    qint64 curTime = QDateTime::currentMSecsSinceEpoch();
     while(it != stackNotifi.end())
     {
         ord.rate = it.value().rate;
         ord.amount = it.value().amount;
         ord.TradePairId = it.value().TradePairId;
-        qDebug() << "myOrder.size()=" << myOrders.size();
+//        qDebug() << "myOrder.size()=" << myOrders.size();
         for(int j=0; j<myOrders.size(); j++)
         {
 //            qDebug() << "stackNotifiN_=" << it.key() << " rate=" << QString::number(ord.rate, 'f', 8) << " pairId=" << ord.TradePairId << " size=" << stackNotifi.size();
@@ -236,34 +238,35 @@ void OpenOrdrers::handler()
                 ord.orderId = myOrders[j].orderId;
                 stack.append(it.key());
                 emit sendNotifi(ord.rate, ord.amount, ord.TradePairId, ord.orderId);
-//                stackNotifi.remove(it.key());
-                qDebug() << "save for remove timeStamp=" << it.key();
-//                stackNotifi.removeAt(i);
+//                qDebug() << "save for remove timeStamp=" << it.key();
             }
         }
          ++it;
     }
-    qDebug() << "Section remove save timeStamp";
+//    qDebug() << "Section remove save timeStamp";
     for(int i = 0; i < stack.size(); i++)
     {
         stackNotifi.remove(stack[i]);
-        qDebug() << "remove one item";
+//        qDebug() << "remove one item";
     }
-    //    for(int i=0; i< stackNotifi.size(); i++)
-//    {
-//        ord.rate = stackNotifi[i].rate;
-//        ord.amount = stackNotifi[i].amount;
-//        ord.TradePairId = stackNotifi[i].TradePairId;
-//        for(int j=0; j<myOrders.size(); j++)
-//        {
-//            if(myOrders[j].rate == ord.rate && myOrders[j].amount == ord.amount && myOrders[j].TradePairId == ord.TradePairId)
-//            {
-//                ord.orderId = myOrders[j].orderId;
-//                emit sendNotifi(ord.rate, ord.amount, ord.TradePairId, ord.orderId);
-//                stackNotifi.removeAt(i);
-//            }
-//        }
-//    }
+    if(!stackNotifi.empty()) {
+        if((curTime - stackNotifi.begin().key())/1000 > 10)
+        {
+            emit sendNotifi(stackNotifi.begin().value().rate, stackNotifi.begin().value().amount, stackNotifi.begin().value().TradePairId, -1);
+            qDebug() << "Time out for stackNotify - emit sendNotifi -1 price = " << QString::number(stackNotifi.begin().value().rate, 'f', 8);
+            stackNotifi.remove(stackNotifi.begin().key());
+        }
+    }
+}
+
+void OpenOrdrers::notifyOrders()
+{
+    QVector <double> ord;
+    for(int i = 0; i < myOrders.size(); i++)
+    {
+        ord.append(myOrders[i].rate);
+    }
+    emit sendNotifyOrders(ord);
 }
 
 QList<double> OpenOrdrers::getOpenOrdersId(int price)

@@ -66,7 +66,9 @@ QVariant ModelOrders::data(const QModelIndex &index, int role) const
             }
         case Qt::DecorationRole:{
 //            this->parent->myOrder.size();
-//            return QIcon("galka.png");
+            if(index.column() == 0 && openOrders.contains(rec.price))
+                return QIcon("galka.png");
+
         }
     default:
             return QVariant();
@@ -284,6 +286,11 @@ void ModelOrders::mysuperfunk()
 void ModelOrders::updateCell()
 {
     emit dataChanged(createIndex(1,1), createIndex(2,2));
+}
+
+void ModelOrders::getNotifyOpenOrders(QVector <double> ord)
+{
+    openOrders = ord;
 }
 
 void ModelOrders::appendOrder(ModelOrders::Order ord)
